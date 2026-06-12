@@ -80,6 +80,22 @@ class Store:
         self._snapshot = self._snapshot.with_health(self._stream.health)
         self._publish()
 
+    async def run(self, source: Any) -> Any:
+        """Drive a source to completion; never raises for per-event failures.
+
+        Returns the terminal :class:`~intui.events.stream.StreamHealth`:
+        ``ENDED`` when the source completes naturally, ``DISCONNECTED`` when
+        it fails mid-stream.
+        """
+        try:
+            async for raw in source:
+                self.ingest_raw(raw)
+        except Exception:
+            self.mark_disconnected()
+        else:
+            self.mark_ended()
+        return self._snapshot.health
+
     def mark_disconnected(self) -> None:
         """Record that the source was lost before its natural end."""
         self._stream.mark_disconnected()

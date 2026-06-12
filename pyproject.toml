@@ -28,6 +28,9 @@ packages = ["src/intui"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# Project-local tmp base: the default %TEMP%/pytest-of-<user> dir can end up
+# with broken ACLs on Windows, breaking the tmp_path fixture.
+addopts = "--basetemp=.pytest_tmp"
 
 [tool.ruff]
 line-length = 99

@@ -50,10 +50,4 @@ class IntuiApp(App[None]):
         Per-event failures are isolated by the store; source exhaustion is
         surfaced as stream health (FR-007), never as a crash.
         """
-        try:
-            async for raw in source:
-                self.store.ingest_raw(raw)
-        except Exception:
-            self.store.mark_disconnected()
-        else:
-            self.store.mark_ended()
+        await self.store.run(source)

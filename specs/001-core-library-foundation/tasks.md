@@ -68,15 +68,15 @@
 
 ### Tests for User Story 2 (write first, ensure they FAIL)
 
-- [ ] T020 [P] [US2] Failing tests for recording round-trip in `tests/unit/test_recording.py`: write→read lossless, malformed line reported with line number + reason, `skip` vs `halt` modes, older-supported-version envelope accepted
-- [ ] T021 [P] [US2] Failing determinism suite in `tests/replay/test_determinism.py` with committed fixture `tests/replay/fixtures/sample_run.jsonl`: replay twice => identical final snapshots; headless replay equals live-run snapshot
+- [X] T020 [P] [US2] Failing tests for recording round-trip in `tests/unit/test_recording.py`: write→read lossless, malformed line reported with line number + reason, `skip` vs `halt` modes, older-supported-version envelope accepted
+- [X] T021 [P] [US2] Failing determinism suite in `tests/replay/test_determinism.py` with committed fixture `tests/replay/fixtures/sample_run.jsonl`: replay twice => identical final snapshots; headless replay equals live-run snapshot
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Implement `write_recording`/`read_recording` (JSONL, UTF-8) in `src/intui/events/recording.py`
-- [ ] T023 [US2] Implement `JsonlReplaySource` (optional `rate` pacing, `on_malformed` policy) in `src/intui/events/sources.py`
-- [ ] T024 [US2] Implement `Store.run(source)` async drive: per-event failures never raise, returns terminal `StreamHealth`; tests in `tests/unit/test_store_run.py` (ended/disconnected/erroring outcomes)
-- [ ] T025 [US2] Switch the example to replay a bundled `examples/hello_replay/recording.jsonl` (create the recording: a simulated multi-step run with statuses for later signal states) and show stream health when the recording ends
+- [X] T022 [US2] Implement `write_recording`/`read_recording` (JSONL, UTF-8) in `src/intui/events/recording.py`
+- [X] T023 [US2] Implement `JsonlReplaySource` (optional `rate` pacing, `on_malformed` policy) in `src/intui/events/sources.py`
+- [X] T024 [US2] Implement `Store.run(source)` async drive: per-event failures never raise, returns terminal `StreamHealth`; tests in `tests/unit/test_store_run.py` (ended/disconnected/erroring outcomes)
+- [X] T025 [US2] Switch the example to replay a bundled `examples/hello_replay/recording.jsonl` (create the recording: a simulated multi-step run with statuses for later signal states) and show stream health when the recording ends
 
 **Checkpoint**: recordings are the test backbone; example replays a real file.
 
