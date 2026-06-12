@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "in-tui-tion"
+version = "0.1.0"
+description = "A library for building rich, modern, first-class terminal user interfaces."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "textual>=6,<7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.25",
+    "pytest-textual-snapshot>=1.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/intui"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 99
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "TID"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# Layer boundary (Constitution Principle II): the pipeline core is engine-free.
+# Enforced for the whole package here; widgets/ and app.py are exempted below.
+"textual".msg = "Only intui.widgets and intui.app may import the terminal engine."
+
+[tool.ruff.lint.per-file-ignores]
+"src/intui/widgets/**" = ["TID251"]
+"src/intui/app.py" = ["TID251"]
+"tests/snapshot/**" = ["TID251"]
+"examples/**" = ["TID251"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/intui"]
+
+[[tool.mypy.overrides]]
+# Textual-facing modules: strict typing relaxed where the engine's
+# dynamic APIs make it impractical.
+module = ["intui.widgets.*", "intui.app"]
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
