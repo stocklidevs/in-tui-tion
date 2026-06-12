@@ -88,15 +88,15 @@
 
 ### Tests for User Story 3 (write first, ensure they FAIL)
 
-- [ ] T026 [P] [US3] Failing tests for intents in `tests/unit/test_intents.py`: `Intent` immutability/payload, handler protocol delivery, library never mutates app state (handler is sole mutation seam)
-- [ ] T027 [P] [US3] Failing tests for confirmation state machine in `tests/unit/test_confirm.py`: created→confirming→confirmed delivery, cancelled never delivered, non-risky bypasses confirmation
+- [X] T026 [P] [US3] Failing tests for intents in `tests/unit/test_intents.py`: `Intent` immutability/payload, handler protocol delivery, library never mutates app state (handler is sole mutation seam)
+- [X] T027 [P] [US3] Failing tests for confirmation state machine in `tests/unit/test_confirm.py`: created→confirming→confirmed delivery, cancelled never delivered, non-risky bypasses confirmation
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Implement `Intent` + `IntentHandler` protocol in `src/intui/actions/intents.py`
-- [ ] T029 [US3] Implement confirmation flow state machine in `src/intui/actions/confirm.py`
-- [ ] T030 [US3] Wire `IntuiApp.post_intent`, keybinding registration for actions, and the built-in confirmation prompt (modal) in `src/intui/app.py`; Pilot tests in `tests/snapshot/test_us3_intents.py` (shortcut → intent delivered with payload; risky → confirm prompt → confirm/cancel paths; all actions keyboard-reachable)
-- [ ] T031 [US3] Add intents to the example: `r` (re-run replay, normal) and `x` (clear history, risky/confirmable); handler appends events back through the source
+- [X] T028 [US3] Implement `Intent` + `IntentHandler` protocol in `src/intui/actions/intents.py`
+- [X] T029 [US3] Implement confirmation flow state machine in `src/intui/actions/confirm.py`
+- [X] T030 [US3] Wire `IntuiApp.post_intent`, keybinding registration for actions, and the built-in confirmation prompt (modal) in `src/intui/app.py`; Pilot tests in `tests/snapshot/test_us3_intents.py` (shortcut → intent delivered with payload; risky → confirm prompt → confirm/cancel paths; all actions keyboard-reachable)
+- [X] T031 [US3] Add intents to the example: `r` (re-run replay, normal) and `x` (clear history, risky/confirmable); handler appends events back through the source
 
 **Checkpoint**: the unidirectional loop is closed — input → intent → app → events → UI.
 
