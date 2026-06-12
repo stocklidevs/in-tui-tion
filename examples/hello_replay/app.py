@@ -22,10 +22,40 @@ from intui.actions import Intent
 from intui.app import IntuiApp
 from intui.events import Event, JsonlReplaySource, Scope, StreamState, read_recording
 from intui.state import Snapshot, Store, compose_reducers
+from intui.theming import DEFAULT_THEME, MotionMode, StatusStyle, Theme
 from intui.viewmodels import health_view, selector
-from intui.widgets import BoundWidget
+from intui.widgets import BoundWidget, Signal
 
 RECORDING = Path(__file__).parent / "recording.jsonl"
+
+LIGHT_THEME = Theme(
+    name="intui-light",
+    palette={
+        "background": "#fafafa",
+        "surface": "#ffffff",
+        "text": "#1f2328",
+        "text-muted": "#59636e",
+    },
+    emphasis={"accent": "#0969da", "muted": "#d1d9e0"},
+    status_colors={
+        "thinking": "#cf222e",
+        "waiting": "#9a6700",
+        "verifying": "#1b7c83",
+        "success": "#1a7f37",
+        "history": "#8250df",
+        "failure": "#cf222e",
+    },
+)
+
+SIGNAL_STYLES = {
+    "idle": StatusStyle(color="muted", motion=MotionMode.STEADY, glyph="·", label="idle"),
+    "running": StatusStyle(color="thinking", motion=MotionMode.SWOOSH, glyph="»", label="working"),
+    "verifying": StatusStyle(
+        color="verifying", motion=MotionMode.SWOOSH, glyph="≈", label="verifying"
+    ),
+    "passed": StatusStyle(color="success", motion=MotionMode.STEADY, glyph="✔", label="passed"),
+    "failed": StatusStyle(color="failure", motion=MotionMode.STROBE, glyph="✘", label="failed"),
+}
 
 
 # --- Reducers: fold run events into application state ----------------------
@@ -70,6 +100,11 @@ def status_vm(snapshot: Snapshot) -> str:
     return f"run status: {status}"
 
 
+@selector
+def signal_status_vm(snapshot: Snapshot) -> str:
+    return snapshot.slice("status")
+
+
 # --- Widgets ----------------------------------------------------------------
 
 
@@ -92,15 +127,22 @@ class HelloReplayApp(IntuiApp):
         ("q", "quit", "Quit"),
         ("r", "rerun", "Re-run replay"),
         ("x", "clear", "Clear log"),
+        ("t", "switch_theme", "Switch theme"),
     ]
     CSS = """
-    StatusLine { dock: top; height: 1; padding: 0 1; background: $panel; }
+    #topbar { dock: top; height: 1; background: $panel; }
+    Signal { padding: 0 1; }
+    StatusLine { padding: 0 1; width: 1fr; }
     VerticalScroll { padding: 0 1; }
     """
 
     def compose(self) -> ComposeResult:
+        from textual.containers import Horizontal
+
         yield Header()
-        yield StatusLine(status_vm)
+        with Horizontal(id="topbar"):
+            yield Signal(signal_status_vm, SIGNAL_STYLES)
+            yield StatusLine(status_vm)
         yield VerticalScroll(EventLog(log_vm))
         yield Footer()
 
@@ -109,6 +151,10 @@ class HelloReplayApp(IntuiApp):
 
     def action_clear(self) -> None:
         self.post_intent(Intent(name="clear_history", risky=True))
+
+    def action_switch_theme(self) -> None:
+        nxt = LIGHT_THEME if self.intui_theme == DEFAULT_THEME else DEFAULT_THEME
+        self.set_theme(nxt)
 
 
 def build_app(events_per_second: float = 2.0) -> HelloReplayApp:

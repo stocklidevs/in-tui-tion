@@ -13,6 +13,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.screen import ModalScreen
+from textual.theme import Theme as TextualTheme
 from textual.widgets import Label
 
 from intui.actions.confirm import ConfirmationFlow
@@ -22,6 +23,24 @@ from intui.state.store import Store
 from intui.theming.default import DEFAULT_THEME
 from intui.theming.theme import Theme
 from intui.widgets.bridge import StoreBridge
+
+
+def _to_textual_theme(theme: Theme) -> TextualTheme:
+    """Map intui theme tokens onto Textual's design system (FR-017)."""
+    muted = theme.emphasis.get("muted", "#808080")
+    return TextualTheme(
+        name=theme.name,
+        primary=theme.emphasis.get("accent", "#0178d4"),
+        accent=theme.emphasis.get("accent", "#0178d4"),
+        background=theme.palette.get("background"),
+        surface=theme.palette.get("surface"),
+        panel=theme.palette.get("surface", muted),
+        foreground=theme.palette.get("text"),
+        success=theme.status_colors.get("success"),
+        warning=theme.status_colors.get("waiting"),
+        error=theme.status_colors.get("failure"),
+        dark=True,
+    )
 
 
 class ConfirmScreen(ModalScreen[bool]):
@@ -88,8 +107,16 @@ class IntuiApp(App[None]):
         self._confirmation = ConfirmationFlow(deliver=self._deliver_intent)
 
     def on_mount(self) -> None:
+        self.set_theme(self.intui_theme)
         if self._source is not None:
             self.run_worker(self._ingest(self._source), exclusive=False)
+
+    def set_theme(self, theme: Theme) -> None:
+        """Switch the application theme at runtime — no widget changes (FR-017)."""
+        self.intui_theme = theme
+        self.register_theme(_to_textual_theme(theme))
+        self.theme = theme.name
+        self.refresh_css()
 
     async def _ingest(self, source: EventSource) -> None:
         """Drive the source to completion without blocking rendering.

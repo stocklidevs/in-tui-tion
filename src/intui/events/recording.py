@@ -58,7 +58,5 @@ def read_recording(path: Path | str, *, on_malformed: OnMalformed = "skip") -> l
     first bad line raises :class:`EnvelopeError` with its line number.
     """
     return [
-        item
-        for item in iter_recording(path, on_malformed=on_malformed)
-        if isinstance(item, Event)
+        item for item in iter_recording(path, on_malformed=on_malformed) if isinstance(item, Event)
     ]

@@ -108,15 +108,15 @@
 
 ### Tests for User Story 4 (write first, ensure they FAIL)
 
-- [ ] T032 [P] [US4] Failing tests for theme tokens in `tests/unit/test_theming.py`: complete default theme (palette/emphasis/status colors per data-model.md), token lookup, theme equality/naming
-- [ ] T033 [P] [US4] Failing tests for signal status mapping in `tests/unit/test_signal_logic.py` (pure logic: status → StatusStyle resolution, mandatory glyph+label counterpart enforced, unknown status fallback)
+- [X] T032 [P] [US4] Failing tests for theme tokens in `tests/unit/test_theming.py`: complete default theme (palette/emphasis/status colors per data-model.md), token lookup, theme equality/naming
+- [X] T033 [P] [US4] Failing tests for signal status mapping in `tests/unit/test_signal_logic.py` (pure logic: status → StatusStyle resolution, mandatory glyph+label counterpart enforced, unknown status fallback)
 
 ### Implementation for User Story 4
 
-- [ ] T034 [US4] Complete `Theme` tokens and `DEFAULT_THEME` (dark) in `src/intui/theming/theme.py` + `src/intui/theming/default.py`; map tokens onto Textual CSS variables and implement `IntuiApp.set_theme` runtime switch in `src/intui/app.py`
-- [ ] T035 [US4] Implement `Signal` widget with `MotionMode` (steady/pulse/swoosh/strobe) and `StatusStyle` in `src/intui/widgets/signal.py` — appearance derived exclusively from bound selector
-- [ ] T036 [US4] Pilot + snapshot tests in `tests/snapshot/test_us4_theming.py`: theme switch restyles without widget changes; signal transitions across working→waiting→succeeded→failed; status distinguishable with color disabled (glyph/label present)
-- [ ] T037 [US4] Add to example: `t` theme-switch binding (second minimal theme inline in the example) and Signal in the header bound to the replayed run's status
+- [X] T034 [US4] Complete `Theme` tokens and `DEFAULT_THEME` (dark) in `src/intui/theming/theme.py` + `src/intui/theming/default.py`; map tokens onto Textual CSS variables and implement `IntuiApp.set_theme` runtime switch in `src/intui/app.py`
+- [X] T035 [US4] Implement `Signal` widget with `MotionMode` (steady/pulse/swoosh/strobe) and `StatusStyle` in `src/intui/widgets/signal.py` — appearance derived exclusively from bound selector
+- [X] T036 [US4] Pilot + snapshot tests in `tests/snapshot/test_us4_theming.py`: theme switch restyles without widget changes; signal transitions across working→waiting→succeeded→failed; status distinguishable with color disabled (glyph/label present)
+- [X] T037 [US4] Add to example: `t` theme-switch binding (second minimal theme inline in the example) and Signal in the header bound to the replayed run's status
 
 **Checkpoint**: all four stories complete; example demonstrates every shipped capability.
 
