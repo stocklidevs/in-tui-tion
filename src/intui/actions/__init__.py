@@ -1,1 +1,1 @@
-﻿"""intui.actions subpackage."""
+"""intui.actions subpackage."""

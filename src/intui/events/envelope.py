@@ -113,7 +113,9 @@ def parse_event(data: Mapping[str, Any]) -> Event:
     try:
         timestamp = datetime.fromisoformat(raw_timestamp.replace("Z", "+00:00"))
     except ValueError as exc:
-        raise EnvelopeError(f"unparseable timestamp: {raw_timestamp!r}", event_id=event_id) from exc
+        raise EnvelopeError(
+            f"unparseable timestamp: {raw_timestamp!r}", event_id=event_id
+        ) from exc
     type_ = _require_str(data, "type", event_id)
 
     raw_scope = data.get("scope")
