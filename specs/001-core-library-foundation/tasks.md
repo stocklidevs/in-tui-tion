@@ -122,10 +122,10 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T038 [P] Write `examples/hello_replay/README.md` (fresh-checkout steps per quickstart.md, keybinding list incl. `?` help) and root `README.md` (project identity, layers, quickstart link)
-- [ ] T039 [P] Performance/responsiveness test in `tests/replay/test_responsiveness.py`: 1,000+ event recording at 100 events/sec — UI keeps rendering and accepting input (SC-003), renders coalesce (no unbounded queue)
-- [ ] T040 [P] Accessibility audit tests in `tests/snapshot/test_accessibility.py`: every primary example action keyboard-operable (SC-004); every color-coded status identifiable with color disabled (SC-006)
-- [ ] T041 Public API re-exports in `src/intui/__init__.py` matching `contracts/public-api.md` exactly; contract-drift test in `tests/unit/test_public_api.py`
+- [X] T038 [P] Write `examples/hello_replay/README.md` (fresh-checkout steps per quickstart.md, keybinding list incl. `?` help) and root `README.md` (project identity, layers, quickstart link)
+- [X] T039 [P] Performance/responsiveness test in `tests/replay/test_responsiveness.py`: 1,000+ event recording at 100 events/sec — UI keeps rendering and accepting input (SC-003), renders coalesce (no unbounded queue)
+- [X] T040 [P] Accessibility audit tests in `tests/snapshot/test_accessibility.py`: every primary example action keyboard-operable (SC-004); every color-coded status identifiable with color disabled (SC-006)
+- [X] T041 Public API re-exports in `src/intui/__init__.py` matching `contracts/public-api.md` exactly; contract-drift test in `tests/unit/test_public_api.py`
 - [ ] T042 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; verify quickstart steps from a clean clone (SC-001)
 
 ## Dependencies & Execution Order

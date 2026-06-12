@@ -104,7 +104,7 @@ async def test_signal_transitions_track_the_bound_status() -> None:
             ("e4", "failed", "!", "failed"),
         ]:
             store.ingest(make_event(event_id, status))
-            await pilot.pause()
+            await pilot.pause(0.05)  # ride out the bridge's flush throttle
             rendered = app.signal._render_frame().plain
             assert glyph in rendered, (status, rendered)
             assert label in rendered, (status, rendered)
@@ -117,7 +117,7 @@ async def test_status_distinguishable_without_color() -> None:
         plains: dict[str, str] = {}
         for event_id, status in [("e1", "running"), ("e2", "passed"), ("e3", "failed")]:
             store.ingest(make_event(event_id, status))
-            await pilot.pause()
+            await pilot.pause(0.05)  # ride out the bridge's flush throttle
             # .plain strips all styling: what remains is the color-free view.
             plains[status] = app.signal._render_frame().plain
         # Each status is uniquely identifiable from text alone (SC-006).
