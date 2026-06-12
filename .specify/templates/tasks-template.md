@@ -9,7 +9,7 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Per Constitution Principle VII (Test-First and Replayable), tests for core logic (event parsing, reducers, view models, adapters) are REQUIRED and written before implementation. Tests for widget/visual behavior are recommended where the toolkit's snapshot/pilot facilities make them practical.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
