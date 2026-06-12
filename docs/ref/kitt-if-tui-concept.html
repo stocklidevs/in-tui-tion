@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IF TUI KITT Concept</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050708;
+      --panel: #0d1316;
+      --panel-2: #111a1f;
+      --panel-3: #151f25;
+      --line: #24343c;
+      --line-hot: rgba(255, 44, 63, 0.54);
+      --text: #e6eef1;
+      --muted: #8da0a8;
+      --muted-2: #5f747e;
+      --red: #ff2c3f;
+      --red-2: #ff7480;
+      --red-soft: rgba(255, 44, 63, 0.16);
+      --green: #47d18c;
+      --green-soft: rgba(71, 209, 140, 0.13);
+      --amber: #ffbd45;
+      --amber-soft: rgba(255, 189, 69, 0.14);
+      --cyan: #52c7ea;
+      --cyan-soft: rgba(82, 199, 234, 0.12);
+      --violet: #b68cff;
+      --scan-main: var(--red);
+      --scan-bright: #ffd0d5;
+      --scan-soft: rgba(255, 44, 63, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(12, 19, 23, 0.96), rgba(3, 4, 5, 1)),
+        radial-gradient(circle at 18% 8%, rgba(255, 44, 63, 0.13), transparent 36%);
+      color: var(--text);
+      font-family: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+      letter-spacing: 0;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 54px 10px minmax(0, 1fr) 44px;
+      border: 1px solid #101619;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 4;
+      display: grid;
+      grid-template-columns: 220px auto 1fr 320px;
+      align-items: center;
+      gap: 14px;
+      padding: 0 16px;
+      background: rgba(7, 11, 13, 0.98);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .shell[data-signal="planning"] {
+      --scan-main: var(--red);
+      --scan-bright: #ffd0d5;
+      --scan-soft: rgba(255, 44, 63, 0.16);
+    }
+
+    .shell[data-signal="approval"] {
+      --scan-main: var(--amber);
+      --scan-bright: #fff0c2;
+      --scan-soft: rgba(255, 189, 69, 0.16);
+    }
+
+    .shell[data-signal="verify"] {
+      --scan-main: var(--cyan);
+      --scan-bright: #d1f5ff;
+      --scan-soft: rgba(82, 199, 234, 0.15);
+    }
+
+    .shell[data-signal="passed"] {
+      --scan-main: var(--green);
+      --scan-bright: #d8ffe8;
+      --scan-soft: rgba(71, 209, 140, 0.14);
+    }
+
+    .shell[data-signal="compare"] {
+      --scan-main: var(--violet);
+      --scan-bright: #efe4ff;
+      --scan-soft: rgba(182, 140, 255, 0.15);
+    }
+
+    .shell[data-signal="failed"] {
+      --scan-main: var(--red);
+      --scan-bright: #fff;
+      --scan-soft: rgba(255, 44, 63, 0.22);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--scan-main);
+      box-shadow: 0 0 16px var(--scan-main);
+    }
+
+    .mode {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .task-chip {
+      position: relative;
+      justify-self: start;
+    }
+
+    .task-chip button {
+      border: 1px solid var(--line-hot);
+      background: var(--scan-soft);
+      padding: 7px 10px;
+      min-width: 174px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      text-align: left;
+    }
+
+    .task-chip button:hover,
+    .task-chip.open button {
+      border-color: var(--scan-main);
+      box-shadow: 0 0 18px var(--scan-soft);
+    }
+
+    .task-count {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .task-label {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .chev {
+      color: var(--red-2);
+      font-size: 11px;
+    }
+
+    .task-dropdown {
+      display: none;
+      position: absolute;
+      top: 42px;
+      left: 0;
+      width: 440px;
+      max-height: 520px;
+      overflow: hidden;
+      background: #071013;
+      border: 1px solid var(--line-hot);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    .task-chip.open .task-dropdown {
+      display: block;
+    }
+
+    .dropdown-head {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 44, 63, 0.08);
+    }
+
+    .dropdown-list {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 7px 8px;
+      background: var(--panel-2);
+      border-left: 3px solid var(--line);
+      font-size: 12px;
+    }
+
+    .check-row.done {
+      border-left-color: var(--green);
+      color: #d5f4e4;
+    }
+
+    .check-row.active {
+      border-left-color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .check-row.blocked {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .box {
+      width: 13px;
+      height: 13px;
+      border: 1px solid var(--muted-2);
+      display: grid;
+      place-items: center;
+      color: var(--green);
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .metrics b {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .scanner {
+      position: relative;
+      overflow: hidden;
+      background: #10070a;
+      border-bottom: 1px solid var(--scan-main);
+    }
+
+    .scanner::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 16%;
+      background: linear-gradient(90deg, transparent, var(--scan-main), var(--scan-bright), var(--scan-main), transparent);
+      filter: blur(1px);
+      animation: scan 1.7s ease-in-out infinite alternate;
+      opacity: 0.95;
+    }
+
+    .shell[data-signal="failed"] .scanner::before {
+      animation: scan 620ms steps(8) infinite alternate;
+    }
+
+    @keyframes scan {
+      from { transform: translateX(-20%); }
+      to { transform: translateX(620%); }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 350px minmax(440px, 1fr) 390px;
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: rgba(13, 19, 22, 0.96);
+      border: 1px solid var(--line);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel h2 {
+      margin: 0;
+      padding: 10px 12px;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: #b7c6cc;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel h2 span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: none;
+    }
+
+    .panel-body {
+      padding: 12px;
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .plan-tree {
+      display: grid;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .plan-task {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .plan-title {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 10px;
+      border-left: 3px solid var(--line);
+    }
+
+    .plan-task.done .plan-title { border-left-color: var(--green); }
+    .plan-task.active .plan-title {
+      border-left-color: var(--red);
+      background: var(--red-soft);
+    }
+    .plan-task.blocked .plan-title { border-left-color: var(--amber); }
+
+    .subtasks {
+      padding: 0 10px 10px 40px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .subtask {
+      display: grid;
+      grid-template-columns: 16px 1fr auto;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .subtask b {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .worker-lanes {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .lane {
+      border: 1px solid var(--line);
+      background: #071013;
+      padding: 8px;
+    }
+
+    .lane-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .activity {
+      position: relative;
+      height: 7px;
+      overflow: hidden;
+      background: #020506;
+      border: 1px solid #18252b;
+    }
+
+    .activity::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 30%;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+      animation: lane-scan 1.15s linear infinite;
+    }
+
+    .lane.wait .activity::before {
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      animation-duration: 1.8s;
+    }
+
+    .lane.done .activity::before {
+      width: 100%;
+      background: var(--green);
+      animation: none;
+    }
+
+    @keyframes lane-scan {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(340%); }
+    }
+
+    .conversation {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-height: 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 136px;
+      gap: 14px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(255, 44, 63, 0.12), transparent 60%);
+    }
+
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .voice {
+      align-self: center;
+      display: grid;
+      gap: 5px;
+    }
+
+    .voice span {
+      display: block;
+      height: 5px;
+      background: var(--scan-main);
+      box-shadow: 0 0 12px var(--scan-main);
+      animation: voice 900ms ease-in-out infinite alternate;
+    }
+
+    .voice span:nth-child(2) { width: 82%; animation-delay: 120ms; }
+    .voice span:nth-child(3) { width: 68%; animation-delay: 240ms; }
+    .voice span:nth-child(4) { width: 96%; animation-delay: 360ms; }
+    .voice span:nth-child(5) { width: 72%; animation-delay: 480ms; }
+
+    @keyframes voice {
+      from { opacity: 0.38; transform: scaleX(0.68); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
+
+    .log {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      overflow: auto;
+    }
+
+    .msg {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .msg.agent {
+      border-left: 3px solid var(--red);
+      background: var(--red-soft);
+    }
+
+    .msg.system {
+      border-left: 3px solid var(--cyan);
+      background: var(--cyan-soft);
+    }
+
+    .callout {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--amber);
+      background: var(--amber-soft);
+      font-size: 13px;
+    }
+
+    .callout button {
+      border: 1px solid rgba(255, 189, 69, 0.72);
+      background: #241a08;
+      padding: 6px 9px;
+      cursor: pointer;
+    }
+
+    .prompt {
+      border-top: 1px solid var(--line);
+      padding: 9px 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      background: #080c0e;
+    }
+
+    .prompt b { color: var(--red); }
+
+    .side-stack {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .mini-panel {
+      border: 1px solid var(--line);
+      background: rgba(17, 26, 31, 0.8);
+      overflow: hidden;
+    }
+
+    .mini-panel h3 {
+      margin: 0;
+      padding: 8px 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+      color: #b7c6cc;
+    }
+
+    .mini-body {
+      padding: 10px;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .tile {
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .tile span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .tile b {
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .diff {
+      border: 1px solid var(--line);
+      font-size: 12px;
+      overflow: hidden;
+    }
+
+    .diff div {
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+
+    .add { color: #a9f6c9; background: rgba(71, 209, 140, 0.12); }
+    .del { color: #ffabb4; background: rgba(255, 44, 63, 0.14); }
+    .ctx { color: var(--muted); background: rgba(255, 255, 255, 0.025); }
+
+    .data-flow {
+      display: grid;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .signal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .signal-grid button {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 6px 7px;
+      cursor: pointer;
+      font-size: 11px;
+      text-align: left;
+    }
+
+    .signal-grid button:hover {
+      border-color: var(--scan-main);
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 6px;
+      vertical-align: -1px;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .planning { color: var(--red); }
+    .approval { color: var(--amber); }
+    .verify { color: var(--cyan); }
+    .passed { color: var(--green); }
+    .compare { color: var(--violet); }
+    .failed { color: var(--red-2); }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 7px 8px;
+      background: var(--panel-2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .flow-row b {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .flow-row span {
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 0 12px;
+      border-top: 1px solid var(--line);
+      background: #07090b;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .menu {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .menu button {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 5px 8px;
+      cursor: pointer;
+    }
+
+    .menu button.hot {
+      border-color: var(--amber);
+      background: var(--amber-soft);
+      color: #ffe1a7;
+    }
+
+    .menu button.danger {
+      border-color: var(--red);
+      background: var(--red-soft);
+      color: #ffd4d8;
+    }
+
+    .footer-note {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1120px) {
+      .topbar,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        grid-template-rows: auto 10px auto auto;
+      }
+
+      .task-dropdown {
+        width: min(440px, calc(100vw - 32px));
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell" id="shell" data-signal="approval">
+    <header class="topbar">
+      <div class="brand"><span class="dot"></span> IntentForge Build</div>
+      <div class="task-chip open" id="taskChip">
+        <button type="button" onclick="document.getElementById('taskChip').classList.toggle('open')">
+          <span class="task-count">7 / 14</span>
+          <span class="task-label">tasks complete</span>
+          <span class="chev">toggle</span>
+        </button>
+        <div class="task-dropdown">
+          <div class="dropdown-head">
+            <span>Application plan</span>
+            <span>2 running, 1 blocked</span>
+          </div>
+          <div class="dropdown-list">
+            <div class="check-row done"><span class="box">x</span><span>Clarify product goal</span><span class="status">done</span></div>
+            <div class="check-row done"><span class="box">x</span><span>Create feature spec</span><span class="status">done</span></div>
+            <div class="check-row done"><span class="box">x</span><span>Generate milestones</span><span class="status">done</span></div>
+            <div class="check-row active"><span class="box"></span><span>Review capability map</span><span class="status">running</span></div>
+            <div class="check-row active"><span class="box"></span><span>Spawn implementation lanes</span><span class="status">running</span></div>
+            <div class="check-row blocked"><span class="box"></span><span>Approve auth boundary</span><span class="status">waiting</span></div>
+            <div class="check-row"><span class="box"></span><span>Run locked tests</span><span class="status">queued</span></div>
+            <div class="check-row"><span class="box"></span><span>Publish evidence</span><span class="status">queued</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="mode" id="signalLabel">Signal: approval required</div>
+      <div class="metrics">
+        <div>Provider <b>ready</b></div>
+        <div>Mode <b>plan</b></div>
+        <div>Context <b>41%</b></div>
+        <div>Run <b>AAL-1</b></div>
+      </div>
+    </header>
+
+    <div class="scanner" aria-label="KITT-inspired activity scanner"></div>
+
+    <main class="grid">
+      <section class="panel">
+        <h2>Plan Graph <span>top level + drilldown</span></h2>
+        <div class="panel-body">
+          <div class="plan-tree">
+            <div class="plan-task done">
+              <div class="plan-title"><span>01</span><span>Intake and questions</span><span class="status">3/3</span></div>
+              <div class="subtasks">
+                <div class="subtask"><span class="box">x</span><b>Goal captured</b><span>user</span></div>
+                <div class="subtask"><span class="box">x</span><b>Clarifications answered</b><span>agent</span></div>
+              </div>
+            </div>
+
+            <div class="plan-task active">
+              <div class="plan-title"><span>02</span><span>Plan and capability review</span><span class="status">2/5</span></div>
+              <div class="subtasks">
+                <div class="subtask"><span class="box">x</span><b>Blueprint drafted</b><span>done</span></div>
+                <div class="subtask"><span class="box">x</span><b>Capability map produced</b><span>done</span></div>
+                <div class="subtask"><span class="box"></span><b>Persistence lane</b><span>running</span></div>
+                <div class="subtask"><span class="box"></span><b>API lane</b><span>running</span></div>
+                <div class="subtask"><span class="box"></span><b>Auth decision</b><span>waiting</span></div>
+              </div>
+            </div>
+
+            <div class="worker-lanes">
+              <div class="lane">
+                <div class="lane-head"><b>subagent: planner-a</b><span class="status">checking API shape</span></div>
+                <div class="activity"></div>
+              </div>
+              <div class="lane">
+                <div class="lane-head"><b>subagent: evidence-b</b><span class="status">mapping gates</span></div>
+                <div class="activity"></div>
+              </div>
+              <div class="lane wait">
+                <div class="lane-head"><b>operator gate</b><span class="status">approval required</span></div>
+                <div class="activity"></div>
+              </div>
+            </div>
+
+            <div class="plan-task">
+              <div class="plan-title"><span>03</span><span>Build implementation</span><span class="status">0/4</span></div>
+            </div>
+            <div class="plan-task">
+              <div class="plan-title"><span>04</span><span>Verify and repair</span><span class="status">0/3</span></div>
+            </div>
+            <div class="plan-task">
+              <div class="plan-title"><span>05</span><span>Evidence and comparison</span><span class="status">0/2</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel conversation">
+        <div class="hero">
+          <div>
+            <h1>Build a support workbench service</h1>
+            <p>Qwen has proposed a plan. Top-level tasks stay readable; expanding them reveals work items, subagents, tool calls, diffs, verification gates, and evidence rows.</p>
+          </div>
+          <div class="voice" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="log">
+          <div class="msg agent">Planner: I can build the first version with CLI + API + JSON persistence. Auth should be deferred or represented as a boundary stub.</div>
+          <div class="msg system">System: Plan mode blocks writes except the session plan. The visible plan is the approval surface.</div>
+          <div class="callout">
+            <span>Approval needed: include auth as a non-functional boundary stub for this run?</span>
+            <button type="button">Approve</button>
+          </div>
+          <div class="msg">You: Show tasks and what evidence each task will produce.</div>
+          <div class="msg agent">Planner: Opening task drilldown. The active item will produce contract examples, locked tests, operation counts, and an ACB evidence row.</div>
+        </div>
+        <div class="prompt"><b>&gt;</b><span>Ask, steer, approve, compare, inspect, or interrupt...</span><span>/plan /tasks /diff /evidence /graph</span></div>
+      </section>
+
+      <section class="panel">
+        <h2>Evidence + Data Bus <span>live adapter contract</span></h2>
+        <div class="panel-body side-stack">
+          <div class="mini-panel">
+            <h3>Evidence snapshot</h3>
+            <div class="mini-body evidence-grid">
+              <div class="tile"><span>Case Pass</span><b>1.00</b></div>
+              <div class="tile"><span>ACB Level</span><b>5</b></div>
+              <div class="tile"><span>Quality Issues</span><b>0</b></div>
+              <div class="tile"><span>Signature</span><b>f464</b></div>
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <h3>Current diff</h3>
+            <div class="mini-body">
+              <div class="diff">
+                <div class="ctx">src/support/api.py</div>
+                <div class="del">- def create_ticket(payload): pass</div>
+                <div class="add">+ def create_ticket(payload):</div>
+                <div class="add">+     return service.create(payload)</div>
+                <div class="add">+ assert response["status"] == 201</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <h3>Data interaction model</h3>
+            <div class="mini-body data-flow">
+              <div class="flow-row"><b>session</b><span>identity, cwd, mode, provider, permissions, active run</span></div>
+              <div class="flow-row"><b>events</b><span>append-only stream: task_started, tool_call, diff_ready, approval_requested, gate_passed</span></div>
+              <div class="flow-row"><b>state</b><span>derived snapshot for tasks, lanes, active work, counters, blocked gates</span></div>
+              <div class="flow-row"><b>signal</b><span>highest-priority ambient state: failed, approval, verify, planning, compare, passed, idle</span></div>
+              <div class="flow-row"><b>artifacts</b><span>files, diffs, plans, specs, evidence notes, summaries, exported bundles</span></div>
+              <div class="flow-row"><b>actions</b><span>approve, interrupt, cancel, retry, rework, compare, open diff, switch mode</span></div>
+              <div class="signal-grid" aria-label="Signal color preview controls">
+                <button type="button" onclick="setSignal('planning', 'Signal: planning')"><span class="swatch planning"></span>planning</button>
+                <button type="button" onclick="setSignal('approval', 'Signal: approval required')"><span class="swatch approval"></span>approval</button>
+                <button type="button" onclick="setSignal('verify', 'Signal: verification running')"><span class="swatch verify"></span>verify</button>
+                <button type="button" onclick="setSignal('passed', 'Signal: verification passed')"><span class="swatch passed"></span>passed</button>
+                <button type="button" onclick="setSignal('compare', 'Signal: comparing runs')"><span class="swatch compare"></span>compare</button>
+                <button type="button" onclick="setSignal('failed', 'Signal: gate failed')"><span class="swatch failed"></span>failed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="menu">
+        <button type="button" class="danger">Interrupt</button>
+        <button type="button" class="danger">Cancel</button>
+        <button type="button" class="hot">Approve</button>
+        <button type="button">Tasks</button>
+        <button type="button">Diff</button>
+        <button type="button">Files</button>
+        <button type="button">Evidence</button>
+        <button type="button">Compare</button>
+        <button type="button">Graph</button>
+      </div>
+      <div class="footer-note">KITT scanner shows live activity state</div>
+    </footer>
+  </div>
+  <script>
+    function setSignal(signal, label) {
+      document.getElementById("shell").dataset.signal = signal;
+      document.getElementById("signalLabel").textContent = label;
+    }
+  </script>
+</body>
+</html>
