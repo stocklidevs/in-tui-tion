@@ -12,20 +12,20 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Add ruff per-file-ignore for `src/intui/kit/view_router.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
+- [X] T001 Add ruff per-file-ignore for `src/intui/kit/view_router.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
 
 ## Phase 2: Foundational (view model)
 
-- [ ] T002 [P] Failing tests for the view model in `tests/unit/test_views.py`: `view_slice` seeds views + initial current, `view_selected` switches current, unknown id ignored, `view_router_view` entries with selected flag (+ optional label map), `select_view_intent` builds Intent("select_view", {"view": ...}); memoization
-- [ ] T003 Implement `src/intui/kit/state/views.py` (ViewState, view_slice, view_router_view, ViewEntry/ViewRouterView, select_view_intent)
-- [ ] T004 Export the view model from `src/intui/kit/state/__init__.py` and add `ViewRouter` to the lazy exports in `src/intui/kit/__init__.py`
+- [X] T002 [P] Failing tests for the view model in `tests/unit/test_views.py`: `view_slice` seeds views + initial current, `view_selected` switches current, unknown id ignored, `view_router_view` entries with selected flag (+ optional label map), `select_view_intent` builds Intent("select_view", {"view": ...}); memoization
+- [X] T003 Implement `src/intui/kit/state/views.py` (ViewState, view_slice, view_router_view, ViewEntry/ViewRouterView, select_view_intent)
+- [X] T004 Export the view model from `src/intui/kit/state/__init__.py` and add `ViewRouter` to the lazy exports in `src/intui/kit/__init__.py`
 
 **Checkpoint**: view model complete and headlessly tested.
 
 ## Phase 3: User Story 1 — ViewRouter component (P1) [MVP]
 
-- [ ] T005 [US1] Pilot tests (write first) in `tests/snapshot/test_view_router.py`: registers panes by id and shows the selected one, `view_selected` swaps the central pane, unknown/empty selection shows the placeholder, only the central pane changes
-- [ ] T006 [US1] Implement `ViewRouter` in `src/intui/kit/view_router.py` (BoundContainer wrapping ContentSwitcher; mounts `view-{id}` panes + `view-placeholder`; binds `view_router_view` to set current)
+- [X] T005 [US1] Pilot tests (write first) in `tests/snapshot/test_view_router.py`: registers panes by id and shows the selected one, `view_selected` swaps the central pane, unknown/empty selection shows the placeholder, only the central pane changes
+- [X] T006 [US1] Implement `ViewRouter` in `src/intui/kit/view_router.py` (BoundContainer wrapping ContentSwitcher; mounts `view-{id}` panes + `view-placeholder`; binds `view_router_view` to set current)
 
 **Checkpoint**: selecting a view routes the central pane.
 
