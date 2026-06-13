@@ -18,19 +18,34 @@ uv sync
 uv run python -m examples.operator_console
 ```
 
-## Modes
+## Modes and the central view router
 
-| Key | Mode | Shows |
-|-----|------|-------|
-| `1` | Plan | the conversation + the plan's task counter |
-| `2` | Build | activity signal, task chip, task tree, parallel worker lanes |
-| `3` | Inspect | diff viewer + evidence panel (public-safe) |
-| `4` | Review | the run's evidence summary |
+The central space is a **view router**. Modes are the high-level workflow phase
+and each one *preselects a default view*; view commands route the center
+precisely without changing mode.
+
+| Key | Mode | Default central view |
+|-----|------|----------------------|
+| `1` | Plan | tasks |
+| `2` | Build | tasks |
+| `3` | Inspect | diff |
+| `4` | Review | evidence |
+
+Registered central views (route to any of them by command, see below):
+
+| View | Shows |
+|------|-------|
+| tasks | task counter chip + two-level task tree |
+| lanes | parallel worker lanes |
+| diff | changed-file list + green/red diff (public-safe) |
+| evidence | run outcome metrics (public-safe) |
 
 The conversation transcript (agent/user/system messages, a clarifying
-question, an approval prompt) is persistent on the left across all modes. The
-replay also drives modes on its own, so the console walks Plan → Build →
-Inspect → Review as the run progresses; you can switch at any time.
+question, an approval prompt) is persistent on the left across all modes; the
+activity strip and prompt persist too. The replay also drives modes on its own,
+so the console walks Plan → Build → Inspect → Review as the run progresses,
+each preselecting its default view; you can switch mode or route a view at any
+time.
 
 ## Type a prompt
 
@@ -51,7 +66,8 @@ on failure — always with a textual label so state is readable without colour.
 
 | Key | Action |
 |-----|--------|
-| `1`–`4` | Switch mode |
+| `1`–`4` | Switch mode (preselects that mode's default view) |
+| `t` `l` `d` `e` | Route the central view: Tasks / Lanes / Diff / Evidence |
 | type + `enter` | Submit a prompt (focus the bottom field) |
 | arrows / `enter` | Navigate the task tree / diff file list; expand nodes |
 | `a` `d` `e` | Commands: approve / diff / evidence |

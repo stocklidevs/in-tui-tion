@@ -31,24 +31,24 @@
 
 ## Phase 4: User Story 2 — Commands route the center (P2)
 
-- [ ] T007 [US2] In `examples/operator_console`, add view commands to the bottom menu whose intents are `select_view_intent("tasks"|"lanes"|"diff"|"evidence")`; handle `select_view` in `handle_intent` by emitting a `view_selected` event
-- [ ] T008 [US2] Pilot test (extend `tests/snapshot/test_operator_console.py`): invoking a view command (key) routes the center to that view; invoking the already-selected view is a no-op
+- [X] T007 [US2] In `examples/operator_console`, add view commands to the bottom menu whose intents are `select_view_intent("tasks"|"lanes"|"diff"|"evidence")`; handle `select_view` in `handle_intent` by emitting a `view_selected` event
+- [X] T008 [US2] Pilot test (extend `tests/snapshot/test_operator_console.py`): invoking a view command (key) routes the center to that view; invoking the already-selected view is a no-op
 
 **Checkpoint**: clicking/keying a view command routes the center.
 
 ## Phase 5: User Story 3 — Modes preselect a default view (P2)
 
-- [ ] T009 [US3] In `examples/operator_console`, replace the mode-pane ContentSwitcher with the `ViewRouter` (views: tasks=chip+tree, lanes, diff, evidence); add a `MODE_DEFAULT_VIEW` map and, on `switch_mode`, emit both `mode_changed` and the mode's default `view_selected`
-- [ ] T010 [US3] Pilot test (extend): switching mode preselects its default view; selecting another view afterward does not change the mode
+- [X] T009 [US3] In `examples/operator_console`, replace the mode-pane ContentSwitcher with the `ViewRouter` (views: tasks=chip+tree, lanes, diff, evidence); add a `MODE_DEFAULT_VIEW` map and, on `switch_mode`, emit both `mode_changed` and the mode's default `view_selected`
+- [X] T010 [US3] Pilot test (extend): switching mode preselects its default view; selecting another view afterward does not change the mode
 
 **Checkpoint**: modes set a default central view; the router gives precise control.
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T011 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the router-api.md names (`intui.kit.state` + `intui.kit`)
-- [ ] T012 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: view routing keyboard-only (SC-005); placeholder/selection identifiable without color
-- [ ] T013 [P] Update `examples/operator_console/README.md` (view commands + central router, mode defaults) and the root README
-- [ ] T014 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
+- [X] T011 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the router-api.md names (`intui.kit.state` + `intui.kit`)
+- [X] T012 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: view routing keyboard-only (SC-005); placeholder/selection identifiable without color
+- [X] T013 [P] Update `examples/operator_console/README.md` (view commands + central router, mode defaults) and the root README
+- [X] T014 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
 
 ## Dependencies & Execution Order
 

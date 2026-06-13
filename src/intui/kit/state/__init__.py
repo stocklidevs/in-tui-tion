@@ -56,14 +56,6 @@ from intui.kit.state.modes import (
     mode_view,
     switch_mode_intent,
 )
-from intui.kit.state.views import (
-    ViewEntry,
-    ViewRouterView,
-    ViewState,
-    select_view_intent,
-    view_router_view,
-    view_slice,
-)
 from intui.kit.state.reduce import taskboard_slice
 from intui.kit.state.selectors import (
     ChipRow,
@@ -78,6 +70,14 @@ from intui.kit.state.selectors import (
     lanes_view,
     taskboard_from,
     tree_view,
+)
+from intui.kit.state.views import (
+    ViewEntry,
+    ViewRouterView,
+    ViewState,
+    select_view_intent,
+    view_router_view,
+    view_slice,
 )
 
 __all__ = [
