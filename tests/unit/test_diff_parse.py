@@ -49,9 +49,7 @@ def test_hunk_line_numbers_seeded() -> None:
 
 
 def test_binary_file_marked_no_text_diff() -> None:
-    text = (
-        "--- a/img.png\n+++ b/img.png\nBinary files a/img.png and b/img.png differ\n"
-    )
+    text = "--- a/img.png\n+++ b/img.png\nBinary files a/img.png and b/img.png differ\n"
     files = parse_unified_diff(text)
     assert len(files) == 1
     assert files[0].no_text_diff is True

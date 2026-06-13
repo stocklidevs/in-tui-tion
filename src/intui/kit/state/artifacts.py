@@ -89,7 +89,9 @@ _URL_CRED = re.compile(r"\w+://\S+")
 _WIN_PATH = re.compile(r"[A-Za-z]:[\\/][^\s;]+")
 _POSIX_PATH = re.compile(r"/(?:[\w.\-]+/)+[\w.\-]+")
 _SK_TOKEN = re.compile(r"\bsk-[A-Za-z0-9]{6,}\b")
-_HIGH_ENTROPY = re.compile(r"\b(?=[A-Za-z0-9_\-]*\d)(?=[A-Za-z0-9_\-]*[A-Za-z])[A-Za-z0-9_\-]{20,}\b")
+_HIGH_ENTROPY = re.compile(
+    r"\b(?=[A-Za-z0-9_\-]*\d)(?=[A-Za-z0-9_\-]*[A-Za-z])[A-Za-z0-9_\-]{20,}\b"
+)
 
 
 def redact(text: str) -> str:
@@ -226,11 +228,13 @@ def _file_from_mapping(data: Mapping[str, Any]) -> FileDiff:
         DiffLine(DiffLineKind(line.get("kind", "context")), str(line.get("text", "")))
         for line in data.get("lines", [])
     )
+    added = sum(1 for line in lines if line.kind is DiffLineKind.ADD)
+    removed = sum(1 for line in lines if line.kind is DiffLineKind.REMOVE)
     return FileDiff(
         path=raw.replace("\\", "/"),
         raw_path=raw,
-        added=int(data.get("added", sum(1 for line in lines if line.kind is DiffLineKind.ADD))),
-        removed=int(data.get("removed", sum(1 for line in lines if line.kind is DiffLineKind.REMOVE))),
+        added=int(data.get("added", added)),
+        removed=int(data.get("removed", removed)),
         lines=lines,
         no_text_diff=bool(data.get("no_text_diff", False)),
     )
@@ -274,7 +278,9 @@ class DiffFileRow:
 @dataclass(frozen=True, slots=True)
 class DiffView:
     files: tuple[DiffFileRow, ...] = ()
-    bodies: Mapping[str, tuple[DiffLine, ...]] = field(default_factory=lambda: MappingProxyType({}))
+    bodies: Mapping[str, tuple[DiffLine, ...]] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
 
     def body(self, path: str) -> tuple[DiffLine, ...]:
         return self.bodies.get(path, ())
@@ -340,10 +346,7 @@ def evidence_view(
 
 
 def _render_metric(metric: EvidenceMetric, redacting: bool) -> EvidenceRow:
-    if isinstance(metric.value, tuple):
-        rendered = ", ".join(metric.value)
-    else:
-        rendered = str(metric.value)
+    rendered = ", ".join(metric.value) if isinstance(metric.value, tuple) else str(metric.value)
     if redacting:
         rendered = REDACTION_MARKER if metric.unsafe else redact(rendered)
     return EvidenceRow(

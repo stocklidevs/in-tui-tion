@@ -7,7 +7,6 @@ from intui.kit.state import (
     ArtifactStore,
     DiffArtifact,
     EvidenceArtifact,
-    EvidenceMetric,
     FileDiff,
     artifacts_slice,
     diff_view,
@@ -76,7 +75,7 @@ def test_diff_ready_reduced_into_store() -> None:
     store.ingest(diff_event())
     art: ArtifactStore = store.snapshot.slice("artifacts")
     assert isinstance(art.diff, DiffArtifact)
-    assert [f.path for f in art.diff.files] == ["src/app.py", "src/app.py"] or len(art.diff.files) == 2
+    assert len(art.diff.files) == 2
 
 
 def test_evidence_ready_reduced_into_store() -> None:
@@ -101,8 +100,14 @@ def test_unknown_event_passes_through() -> None:
     store = make_store()
     before = store.snapshot.slice("artifacts")
     store.ingest(
-        Event(version="1", event_id="x", run_id="r", timestamp=datetime(2026, 6, 13, tzinfo=UTC),
-              type="unrelated", scope=Scope())
+        Event(
+            version="1",
+            event_id="x",
+            run_id="r",
+            timestamp=datetime(2026, 6, 13, tzinfo=UTC),
+            type="unrelated",
+            scope=Scope(),
+        )
     )
     assert store.snapshot.slice("artifacts") == before
 

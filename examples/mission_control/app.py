@@ -17,11 +17,21 @@ from textual.widgets import Footer, Header, Label
 from intui.actions import Intent
 from intui.app import IntuiApp
 from intui.events import JsonlReplaySource
-from intui.kit import CommandBar, LanesPanel, TaskCounterChip, TaskTree
+from intui.kit import (
+    CommandBar,
+    DiffViewer,
+    EvidencePanel,
+    LanesPanel,
+    TaskCounterChip,
+    TaskTree,
+)
 from intui.kit.state import (
     Command,
     CommandRegistry,
+    artifacts_slice,
     chip_view,
+    diff_view,
+    evidence_view,
     lanes_view,
     taskboard_slice,
     tree_view,
@@ -52,9 +62,11 @@ class MissionControlApp(IntuiApp):
     CSS = """
     TaskCounterChip { dock: top; padding: 0 1; background: $panel; }
     #columns { height: 1fr; }
-    #tasks-col { width: 2fr; border-right: solid $panel; padding: 0 1; }
-    #lanes-col { width: 1fr; padding: 0 1; }
+    #tasks-col { width: 1fr; border-right: solid $panel; padding: 0 1; }
+    #lanes-col { width: 1fr; border-right: solid $panel; padding: 0 1; }
+    #inspect-col { width: 2fr; padding: 0 1; }
     .col-title { text-style: bold; color: $text-muted; }
+    EvidencePanel { height: auto; max-height: 50%; }
     CommandBar { dock: bottom; background: $panel; }
     """
 
@@ -68,6 +80,11 @@ class MissionControlApp(IntuiApp):
             with Vertical(id="lanes-col"):
                 yield Label("Workers", classes="col-title")
                 yield LanesPanel(lanes_view())
+            with Vertical(id="inspect-col"):
+                yield Label("Evidence", classes="col-title")
+                yield EvidencePanel(evidence_view())
+                yield Label("Diff (public-safe)", classes="col-title")
+                yield DiffViewer(diff_view())
         yield CommandBar(command_registry())
         yield Footer()
 
@@ -84,7 +101,7 @@ class MissionControlApp(IntuiApp):
 
 
 def build_app(events_per_second: float = 3.0) -> MissionControlApp:
-    store = Store(compose_reducers(taskboard=taskboard_slice()))
+    store = Store(compose_reducers(taskboard=taskboard_slice(), artifacts=artifacts_slice()))
     return MissionControlApp(
         store=store, source=JsonlReplaySource(RECORDING, rate=events_per_second)
     )

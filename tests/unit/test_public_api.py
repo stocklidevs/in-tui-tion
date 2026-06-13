@@ -55,6 +55,18 @@ CONTRACT: dict[str, set[str]] = {
         "command_view",
         "match_score",
         "filter_commands",
+        "DiffArtifact",
+        "FileDiff",
+        "DiffLine",
+        "DiffLineKind",
+        "EvidenceArtifact",
+        "EvidenceMetric",
+        "ArtifactStore",
+        "artifacts_slice",
+        "diff_view",
+        "evidence_view",
+        "parse_unified_diff",
+        "redact",
     },
     "intui.kit": {
         "TaskCounterChip",
@@ -62,6 +74,8 @@ CONTRACT: dict[str, set[str]] = {
         "LanesPanel",
         "CommandBar",
         "CommandPalette",
+        "DiffViewer",
+        "EvidencePanel",
     },
 }
 

@@ -119,9 +119,7 @@ def match_score(query: str, text: str) -> int | None:
     return score if qi == len(q) else None
 
 
-def filter_commands(
-    entries: Iterable[CommandEntry], query: str
-) -> tuple[CommandEntry, ...]:
+def filter_commands(entries: Iterable[CommandEntry], query: str) -> tuple[CommandEntry, ...]:
     """Filter+rank entries by id/label match; empty query keeps registry order."""
     ordered = tuple(entries)
     if not query:
@@ -129,8 +127,11 @@ def filter_commands(
     scored: list[tuple[int, int, CommandEntry]] = []
     for order, entry in enumerate(ordered):
         best = max(
-            (s for s in (match_score(query, entry.label), match_score(query, entry.id))
-             if s is not None),
+            (
+                s
+                for s in (match_score(query, entry.label), match_score(query, entry.id))
+                if s is not None
+            ),
             default=None,
         )
         if best is not None:
