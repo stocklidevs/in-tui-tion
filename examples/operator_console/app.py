@@ -1,9 +1,10 @@
-"""operator_console: the flagship agentic operator console (R13, R1).
+"""operator_console: the flagship agentic operator console (R13, R1, R7).
 
-Composes the whole kit — conversation, task chip, task tree, parallel lanes,
-activity signal, command surfaces, diff viewer, evidence panel — across four
-modes (Plan/Build/Inspect/Review), driven by one recorded run. Mode switching
-flows intent -> mode_changed event -> state, the same loop as everything else.
+Composes the whole kit. The central space is driven by a ViewRouter — modes
+(Plan/Build/Inspect/Review) preselect a default view, and view commands
+(Tasks/Lanes/Diff/Evidence) route the center precisely. A persistent
+conversation, activity strip, and prompt surround it. Mode and view switching
+both flow intent -> event -> state.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import ContentSwitcher, Footer, Header, Label
+from textual.widgets import Footer, Header, Label
 
 from intui.actions import Intent
 from intui.app import IntuiApp
@@ -29,6 +30,7 @@ from intui.kit import (
     PromptInput,
     TaskCounterChip,
     TaskTree,
+    ViewRouter,
 )
 from intui.kit.state import (
     Command,
@@ -43,8 +45,11 @@ from intui.kit.state import (
     mode_slice,
     mode_view,
     prompt_message_event,
+    select_view_intent,
     taskboard_slice,
     tree_view,
+    view_router_view,
+    view_slice,
 )
 from intui.state import Snapshot, Store, compose_reducers
 from intui.viewmodels import selector
@@ -52,6 +57,9 @@ from intui.viewmodels import selector
 RECORDING = Path(__file__).parent / "recording.jsonl"
 MODES = ("Plan", "Build", "Inspect", "Review")
 MODE_KEYS = {"1": "Plan", "2": "Build", "3": "Inspect", "4": "Review"}
+VIEWS = ("tasks", "lanes", "diff", "evidence")
+# The "complement" relationship: each mode preselects a default central view.
+MODE_DEFAULT_VIEW = {"Plan": "tasks", "Build": "tasks", "Inspect": "diff", "Review": "evidence"}
 
 
 def run_status_reducer(status: str, event: Event) -> str:
@@ -79,12 +87,21 @@ def activity_state(snapshot: Snapshot) -> str:
 def command_registry() -> CommandRegistry:
     return CommandRegistry(
         [
-            Command("approve", "Approve", Intent("approve"), key="a"),
-            Command("diff", "Diff", Intent("open_diff"), key="d"),
-            Command("evidence", "Evidence", Intent("open_evidence"), key="e"),
+            Command("view_tasks", "Tasks", select_view_intent("tasks"), key="t"),
+            Command("view_lanes", "Lanes", select_view_intent("lanes"), key="l"),
+            Command("view_diff", "Diff", select_view_intent("diff"), key="d"),
+            Command("view_evidence", "Evidence", select_view_intent("evidence"), key="e"),
             Command("cancel", "Cancel run", Intent("cancel", risky=True), key="x"),
             Command("palette", "More", Intent("open_palette"), key="p"),
         ]
+    )
+
+
+def tasks_view() -> VerticalScroll:
+    return VerticalScroll(
+        TaskCounterChip(chip_view()),
+        Label("Tasks", classes="col-title"),
+        TaskTree(tree_view()),
     )
 
 
@@ -96,12 +113,16 @@ class OperatorConsole(IntuiApp):
     ModeStrip { dock: top; padding: 0 1; background: $panel; }
     #body { height: 1fr; }
     #conversation-col { width: 38; border-right: solid $panel; }
-    #mode-content { width: 1fr; padding: 0 1; }
+    ViewRouter { width: 1fr; padding: 0 1; }
     .col-title { text-style: bold; color: $text-muted; }
-    EvidencePanel { height: auto; max-height: 50%; }
+    EvidencePanel { height: auto; }
     PromptInput { dock: bottom; }
     CommandBar { dock: bottom; background: $panel; }
     """
+
+    def __init__(self, **kwargs: object) -> None:
+        super().__init__(**kwargs)  # type: ignore[arg-type]
+        self._last_mode: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -111,38 +132,33 @@ class OperatorConsole(IntuiApp):
             with VerticalScroll(id="conversation-col"):
                 yield Label("Conversation", classes="col-title")
                 yield ConversationLog(conversation_view())
-            with ContentSwitcher(initial="pane-Plan", id="mode-content"):
-                with VerticalScroll(id="pane-Plan"):
-                    yield Label("Plan", classes="col-title")
-                    yield TaskCounterChip(chip_view())
-                with VerticalScroll(id="pane-Build"):
-                    yield TaskCounterChip(chip_view())
-                    yield Label("Tasks", classes="col-title")
-                    yield TaskTree(tree_view())
-                    yield Label("Workers", classes="col-title")
-                    yield LanesPanel(lanes_view())
-                with VerticalScroll(id="pane-Inspect"):
-                    yield Label("Evidence", classes="col-title")
-                    yield EvidencePanel(evidence_view())
-                    yield Label("Diff (public-safe)", classes="col-title")
-                    yield DiffViewer(diff_view())
-                with VerticalScroll(id="pane-Review"):
-                    yield Label("Evidence", classes="col-title")
-                    yield EvidencePanel(evidence_view())
+            yield ViewRouter(
+                view_router_view(),
+                views={
+                    "tasks": tasks_view(),
+                    "lanes": LanesPanel(lanes_view()),
+                    "diff": DiffViewer(diff_view()),
+                    "evidence": EvidencePanel(evidence_view()),
+                },
+            )
         yield PromptInput()
         yield CommandBar(command_registry())
         yield Footer()
 
     def on_mount(self) -> None:
         super().on_mount()
-        self.store.subscribe(self._sync_mode_pane)
+        self.store.subscribe(self._preselect_view_for_mode)
 
-    def _sync_mode_pane(self, snapshot: Snapshot) -> None:
-        current = snapshot.slice("modes").current
-        switcher = self.query_one("#mode-content", ContentSwitcher)
-        pane = f"pane-{current}"
-        if switcher.current != pane:
-            switcher.current = pane
+    def _preselect_view_for_mode(self, snapshot: Snapshot) -> None:
+        # When the mode changes (by intent or replay), preselect its default
+        # central view — deferred to avoid re-entrant ingestion.
+        mode = snapshot.slice("modes").current
+        if mode == self._last_mode:
+            return
+        self._last_mode = mode
+        default = MODE_DEFAULT_VIEW.get(mode)
+        if default and snapshot.slice("views").current != default:
+            self.call_later(self._emit, "view_selected", view=default)
 
     def action_palette(self) -> None:
         self.open_command_palette(command_registry())
@@ -164,6 +180,9 @@ class OperatorConsole(IntuiApp):
         if intent.name == "switch_mode":
             self._emit("mode_changed", mode=intent.payload["mode"])
             return
+        if intent.name == "select_view":
+            self._emit("view_selected", view=intent.payload["view"])
+            return
         if intent.name == "open_palette":
             self.open_command_palette(command_registry())
             return
@@ -174,10 +193,9 @@ class OperatorConsole(IntuiApp):
 
     def _handle_prompt(self, text: str) -> None:
         # The full loop: user message -> "thinking" activity -> scripted reply.
-        # (No live agent yet; only the reply is simulated.)
         self.store.ingest(prompt_message_event(text, run_id="run-console"))
         self._emit("activity_set", state="thinking")
-        reply = f"Acknowledged: “{text}”. (No live agent wired yet — this is a scripted reply.)"
+        reply = f"Acknowledged: “{text}”. (No live agent wired yet — scripted reply.)"
         self.set_timer(1.2, lambda: self._finish_prompt(reply))
 
     def _finish_prompt(self, reply: str) -> None:
@@ -189,6 +207,7 @@ def build_app(events_per_second: float = 4.0) -> OperatorConsole:
     store = Store(
         compose_reducers(
             modes=mode_slice(MODES),
+            views=view_slice(VIEWS, "tasks"),
             conversation=conversation_slice(),
             taskboard=taskboard_slice(),
             artifacts=artifacts_slice(),

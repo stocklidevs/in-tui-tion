@@ -81,6 +81,11 @@ CONTRACT: dict[str, set[str]] = {
         "ACTIVITY_STYLES",
         "activity_style",
         "prompt_message_event",
+        "ViewState",
+        "ViewRouterView",
+        "view_slice",
+        "view_router_view",
+        "select_view_intent",
     },
     "intui.kit": {
         "TaskCounterChip",
@@ -94,6 +99,7 @@ CONTRACT: dict[str, set[str]] = {
         "ConversationLog",
         "PromptInput",
         "ActivityStrip",
+        "ViewRouter",
     },
 }
 

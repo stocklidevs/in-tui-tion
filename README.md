@@ -27,11 +27,13 @@ app adapter -> event stream -> reducer/state store -> view models
    confirmation flow.
 3. **Component kit** (`intui.kit`) — high-level, data-driven components: a
    task counter chip, a two-level task tree, parallel lanes, command surfaces
-   (an always-visible command menu + a searchable command palette), and
-   inspect components (a diff viewer + an evidence panel that render
-   public-safe by default), over a shared engine-free state model
-   (`intui.kit.state`) with ready-made reductions, a command registry, a
-   unified-diff parser, and a public-safety redactor.
+   (an always-visible command menu + a searchable command palette), inspect
+   components (a diff viewer + an evidence panel, public-safe by default), a
+   prompt input, a signature full-width activity strip, modes + a conversation
+   surface, and a central view router that points the main pane at a chosen
+   view — over a shared engine-free state model (`intui.kit.state`) with
+   ready-made reductions, a command registry, a unified-diff parser, and a
+   public-safety redactor.
 4. **Examples** (`examples/`) — first-class runnable demos of every feature.
 
 ## Quickstart

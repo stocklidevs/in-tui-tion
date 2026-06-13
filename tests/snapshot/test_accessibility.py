@@ -266,6 +266,57 @@ async def test_prompt_submission_keyboard_only() -> None:
         assert app.received == ["go"]
 
 
+async def test_view_router_keyboard_routing_and_placeholder() -> None:
+    # SC-005: views routable by keyboard; unregistered selection -> placeholder.
+    from datetime import UTC, datetime
+
+    from textual.app import ComposeResult
+    from textual.widgets import Static
+
+    from intui.app import IntuiApp
+    from intui.events import Event, Scope
+    from intui.kit import ViewRouter
+    from intui.kit.state import view_router_view, view_slice
+    from intui.state import Store, compose_reducers
+
+    class VR(IntuiApp):
+        def __init__(self, **kwargs: object) -> None:
+            super().__init__(**kwargs)  # type: ignore[arg-type]
+            self.router = ViewRouter(
+                view_router_view(),
+                views={"a": Static("A"), "b": Static("B")},
+            )
+
+        def compose(self) -> ComposeResult:
+            yield self.router
+
+    store = Store(compose_reducers(views=view_slice(("a", "b", "ghost"), "a")))
+    app = VR(store=store)
+    async with app.run_test() as pilot:
+        await pilot.pause(0.05)
+        assert app.router.current_view() == "a"
+
+        def select(view: str) -> Event:
+            return Event(
+                version="1",
+                event_id=f"v-{view}",
+                run_id="r",
+                timestamp=datetime(2026, 6, 13, tzinfo=UTC),
+                type="view_selected",
+                scope=Scope(),
+                payload={"view": view},
+            )
+
+        store.ingest(select("b"))
+        await pilot.pause(0.05)
+        assert app.router.current_view() == "b"
+        store.ingest(select("ghost"))  # registered id, no pane -> placeholder
+        await pilot.pause(0.05)
+        from textual.widgets import ContentSwitcher
+
+        assert app.router.query_one(ContentSwitcher).current == "view-placeholder"
+
+
 async def test_kit_chip_keyboard_operable() -> None:
     # SC-004: the chip expands/collapses by keyboard alone.
     from textual.app import ComposeResult

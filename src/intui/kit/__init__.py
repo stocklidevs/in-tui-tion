@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from intui.kit.mode_strip import ModeStrip
     from intui.kit.prompt_input import PromptInput
     from intui.kit.tree import TaskTree
+    from intui.kit.view_router import ViewRouter
 
 __all__ = [
     "ActivityStrip",
@@ -32,6 +33,7 @@ __all__ = [
     "PromptInput",
     "TaskCounterChip",
     "TaskTree",
+    "ViewRouter",
 ]
 
 _LAZY = {
@@ -46,6 +48,7 @@ _LAZY = {
     "ConversationLog": ("intui.kit.conversation_log", "ConversationLog"),
     "PromptInput": ("intui.kit.prompt_input", "PromptInput"),
     "ActivityStrip": ("intui.kit.activity_strip", "ActivityStrip"),
+    "ViewRouter": ("intui.kit.view_router", "ViewRouter"),
 }
 
 

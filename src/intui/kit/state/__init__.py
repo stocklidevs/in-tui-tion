@@ -71,6 +71,14 @@ from intui.kit.state.selectors import (
     taskboard_from,
     tree_view,
 )
+from intui.kit.state.views import (
+    ViewEntry,
+    ViewRouterView,
+    ViewState,
+    select_view_intent,
+    view_router_view,
+    view_slice,
+)
 
 __all__ = [
     "ACTIVITY_STATES",
@@ -102,6 +110,9 @@ __all__ = [
     "ModeEntry",
     "ModeState",
     "ModeView",
+    "ViewEntry",
+    "ViewRouterView",
+    "ViewState",
     "ChipView",
     "ItemRow",
     "LaneRow",
@@ -129,8 +140,11 @@ __all__ = [
     "mode_view",
     "parse_unified_diff",
     "redact",
+    "select_view_intent",
     "status_presentation",
     "switch_mode_intent",
+    "view_router_view",
+    "view_slice",
     "taskboard_from",
     "taskboard_slice",
     "tree_view",
