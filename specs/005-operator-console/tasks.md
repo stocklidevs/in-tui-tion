@@ -12,29 +12,29 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Add ruff per-file-ignores for `src/intui/kit/mode_strip.py` and `src/intui/kit/conversation_log.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
+- [X] T001 Add ruff per-file-ignores for `src/intui/kit/mode_strip.py` and `src/intui/kit/conversation_log.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
 
 ## Phase 2: Foundational (mode + conversation models — blocks the stories)
 
-- [ ] T002 [P] Failing tests for the mode model in `tests/unit/test_modes.py`: `mode_slice` seeds modes + initial current, `mode_changed` switches current, unknown mode ignored, `mode_view` entries with active flag, `switch_mode_intent` builds Intent("switch_mode", {"mode": ...}); memoization
-- [ ] T003 [P] Failing tests for the conversation model in `tests/unit/test_conversation.py`: `message_added`/`question_requested`/`approval_requested` reduce into ordered entries with role/kind, unknown role tolerated, `conversation_view` rows + tags, memoization
-- [ ] T004 Implement `src/intui/kit/state/modes.py` (ModeState, mode_slice, mode_view, ModeEntry/ModeView, switch_mode_intent)
-- [ ] T005 Implement `src/intui/kit/state/conversation.py` (ConversationEntry/State, conversation_slice, conversation_view, ConversationKind/Row/View)
-- [ ] T006 Export both models from `src/intui/kit/state/__init__.py` and add the components to the lazy exports in `src/intui/kit/__init__.py`
+- [X] T002 [P] Failing tests for the mode model in `tests/unit/test_modes.py`: `mode_slice` seeds modes + initial current, `mode_changed` switches current, unknown mode ignored, `mode_view` entries with active flag, `switch_mode_intent` builds Intent("switch_mode", {"mode": ...}); memoization
+- [X] T003 [P] Failing tests for the conversation model in `tests/unit/test_conversation.py`: `message_added`/`question_requested`/`approval_requested` reduce into ordered entries with role/kind, unknown role tolerated, `conversation_view` rows + tags, memoization
+- [X] T004 Implement `src/intui/kit/state/modes.py` (ModeState, mode_slice, mode_view, ModeEntry/ModeView, switch_mode_intent)
+- [X] T005 Implement `src/intui/kit/state/conversation.py` (ConversationEntry/State, conversation_slice, conversation_view, ConversationKind/Row/View)
+- [X] T006 Export both models from `src/intui/kit/state/__init__.py` and add the components to the lazy exports in `src/intui/kit/__init__.py`
 
 **Checkpoint**: mode + conversation models complete and headlessly tested.
 
 ## Phase 3: User Story 1 — Modes (P1) [MVP]
 
-- [ ] T007 [US1] Pilot tests (write first) in `tests/snapshot/test_mode_strip.py`: renders all modes with active marked (non-color), pressing a mode key posts a `switch_mode` intent, `mode_changed` re-highlights, switching to the active mode is a no-op
-- [ ] T008 [US1] Implement `ModeStrip` in `src/intui/kit/mode_strip.py` (BoundContainer over `mode_view`; registers `keys` via `IntuiApp.bind_key` to post `switch_mode_intent`)
+- [X] T007 [US1] Pilot tests (write first) in `tests/snapshot/test_mode_strip.py`: renders all modes with active marked (non-color), pressing a mode key posts a `switch_mode` intent, `mode_changed` re-highlights, switching to the active mode is a no-op
+- [X] T008 [US1] Implement `ModeStrip` in `src/intui/kit/mode_strip.py` (BoundContainer over `mode_view`; registers `keys` via `IntuiApp.bind_key` to post `switch_mode_intent`)
 
 **Checkpoint**: mode strip switches modes through the intent→event loop.
 
 ## Phase 4: User Story 2 — Conversation surface (P2)
 
-- [ ] T009 [US2] Pilot tests (write first) in `tests/snapshot/test_conversation_log.py`: transcript in arrival order, role/kind tags identifiable without color, question vs message distinct, auto-scroll to latest, empty state
-- [ ] T010 [US2] Implement `ConversationLog` in `src/intui/kit/conversation_log.py` (BoundContainer over `conversation_view`; scrollable, auto-scroll to end)
+- [X] T009 [US2] Pilot tests (write first) in `tests/snapshot/test_conversation_log.py`: transcript in arrival order, role/kind tags identifiable without color, question vs message distinct, auto-scroll to latest, empty state
+- [X] T010 [US2] Implement `ConversationLog` in `src/intui/kit/conversation_log.py` (BoundContainer over `conversation_view`; scrollable, auto-scroll to end)
 
 **Checkpoint**: conversation transcript renders all entry kinds.
 

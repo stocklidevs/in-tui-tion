@@ -11,17 +11,21 @@ if TYPE_CHECKING:
     from intui.kit.chip import TaskCounterChip
     from intui.kit.command_bar import CommandBar
     from intui.kit.command_palette import CommandPalette
+    from intui.kit.conversation_log import ConversationLog
     from intui.kit.diff_viewer import DiffViewer
     from intui.kit.evidence_panel import EvidencePanel
     from intui.kit.lanes import LanesPanel
+    from intui.kit.mode_strip import ModeStrip
     from intui.kit.tree import TaskTree
 
 __all__ = [
     "CommandBar",
     "CommandPalette",
+    "ConversationLog",
     "DiffViewer",
     "EvidencePanel",
     "LanesPanel",
+    "ModeStrip",
     "TaskCounterChip",
     "TaskTree",
 ]
@@ -34,6 +38,8 @@ _LAZY = {
     "CommandPalette": ("intui.kit.command_palette", "CommandPalette"),
     "DiffViewer": ("intui.kit.diff_viewer", "DiffViewer"),
     "EvidencePanel": ("intui.kit.evidence_panel", "EvidencePanel"),
+    "ModeStrip": ("intui.kit.mode_strip", "ModeStrip"),
+    "ConversationLog": ("intui.kit.conversation_log", "ConversationLog"),
 }
 
 
