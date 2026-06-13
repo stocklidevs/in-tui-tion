@@ -36,14 +36,6 @@ from intui.kit.state.conversation import (
     conversation_slice,
     conversation_view,
 )
-from intui.kit.state.modes import (
-    ModeEntry,
-    ModeState,
-    ModeView,
-    mode_slice,
-    mode_view,
-    switch_mode_intent,
-)
 from intui.kit.state.model import (
     CORE_STATUSES,
     STATUS_PRESENTATION,
@@ -53,6 +45,14 @@ from intui.kit.state.model import (
     TaskView,
     WorkItemView,
     status_presentation,
+)
+from intui.kit.state.modes import (
+    ModeEntry,
+    ModeState,
+    ModeView,
+    mode_slice,
+    mode_view,
+    switch_mode_intent,
 )
 from intui.kit.state.reduce import taskboard_slice
 from intui.kit.state.selectors import (

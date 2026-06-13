@@ -61,8 +61,9 @@ async def test_key_posts_switch_mode_and_rehighlights() -> None:
         await pilot.pause()
         await pilot.press("3")  # Inspect
         await pilot.pause(0.05)
-        assert any(i.name == "switch_mode" and i.payload["mode"] == "Inspect"
-                   for i in app.received)
+        assert any(
+            i.name == "switch_mode" and i.payload["mode"] == "Inspect" for i in app.received
+        )
         assert store.snapshot.slice("modes").current == "Inspect"
         assert "▸ Inspect" in app.strip.strip_text()
 

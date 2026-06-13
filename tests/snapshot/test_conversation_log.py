@@ -51,7 +51,11 @@ async def test_renders_transcript_in_order_with_tags() -> None:
         assert "Go ahead" in text
         assert "Which environment?" in text
         # order preserved
-        assert text.index("Planning the run") < text.index("Go ahead") < text.index("Which environment?")
+        assert (
+            text.index("Planning the run")
+            < text.index("Go ahead")
+            < text.index("Which environment?")
+        )
 
 
 async def test_role_and_kind_identifiable_without_color() -> None:

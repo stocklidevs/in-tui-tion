@@ -67,6 +67,16 @@ CONTRACT: dict[str, set[str]] = {
         "evidence_view",
         "parse_unified_diff",
         "redact",
+        "ModeState",
+        "ModeView",
+        "mode_slice",
+        "mode_view",
+        "switch_mode_intent",
+        "ConversationState",
+        "ConversationView",
+        "ConversationKind",
+        "conversation_slice",
+        "conversation_view",
     },
     "intui.kit": {
         "TaskCounterChip",
@@ -76,6 +86,8 @@ CONTRACT: dict[str, set[str]] = {
         "CommandPalette",
         "DiffViewer",
         "EvidencePanel",
+        "ModeStrip",
+        "ConversationLog",
     },
 }
 

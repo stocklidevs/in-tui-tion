@@ -40,18 +40,18 @@
 
 ## Phase 5: User Story 3 — The operator console example (P1)
 
-- [ ] T011 [US3] Create committed `examples/operator_console/recording.jsonl` (one narrative: messages + question + approval, `mode_changed`s, task/work-item/lane vocabulary, a `diff_ready`, an `evidence_ready`)
-- [ ] T012 [US3] Implement `examples/operator_console/app.py` + `__main__.py`: store with modes/conversation/taskboard/artifacts slices; persistent mode strip + conversation + signal; per-mode content switch (Plan/Build/Inspect/Review) composing chip/tree/lanes/diff/evidence; `switch_mode` handler appends `mode_changed`; command bar + palette
-- [ ] T013 [US3] Pilot test in `tests/snapshot/test_operator_console.py`: launch headless, advance replay, switch through all four modes, assert each renders without error and the run completes; keyboard-only mode switching works
+- [X] T011 [US3] Create committed `examples/operator_console/recording.jsonl` (one narrative: messages + question + approval, `mode_changed`s, task/work-item/lane vocabulary, a `diff_ready`, an `evidence_ready`)
+- [X] T012 [US3] Implement `examples/operator_console/app.py` + `__main__.py`: store with modes/conversation/taskboard/artifacts slices; persistent mode strip + conversation + signal; per-mode content switch (Plan/Build/Inspect/Review) composing chip/tree/lanes/diff/evidence; `switch_mode` handler appends `mode_changed`; command bar + palette
+- [X] T013 [US3] Pilot test in `tests/snapshot/test_operator_console.py`: launch headless, advance replay, switch through all four modes, assert each renders without error and the run completes; keyboard-only mode switching works
 
 **Checkpoint**: the flagship console runs end to end across all modes.
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T014 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the console-api.md names (`intui.kit.state` + `intui.kit`)
-- [ ] T015 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: mode switching keyboard-only (SC-004); active mode + conversation roles color-free identifiable (SC-002)
-- [ ] T016 [P] `examples/operator_console/README.md` (modes, keys, public-safe note) + root README (operator console as the flagship)
-- [ ] T017 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
+- [X] T014 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the console-api.md names (`intui.kit.state` + `intui.kit`)
+- [X] T015 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: mode switching keyboard-only (SC-004); active mode + conversation roles color-free identifiable (SC-002)
+- [X] T016 [P] `examples/operator_console/README.md` (modes, keys, public-safe note) + root README (operator console as the flagship)
+- [X] T017 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
 
 ## Dependencies & Execution Order
 
