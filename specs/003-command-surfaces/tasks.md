@@ -12,23 +12,23 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Add ruff per-file-ignores for `src/intui/kit/command_bar.py` and `src/intui/kit/command_palette.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
+- [X] T001 Add ruff per-file-ignores for `src/intui/kit/command_bar.py` and `src/intui/kit/command_palette.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
 
 ## Phase 2: Foundational (command model — blocks both stories)
 
-- [ ] T002 [P] Failing tests for registry + availability in `tests/unit/test_commands.py`: duplicate-id rejection, ordered `commands`, `get`, `is_available` over a snapshot, `risky` mirrors `intent.risky`
-- [ ] T003 [P] Failing tests for the matcher in `tests/unit/test_commands.py`: `match_score` case-insensitive subsequence (None on no match, higher for contiguous/word-boundary), `filter_commands` ranks + falls back to registry order on empty query
-- [ ] T004 [P] Failing tests for `command_view` selector in `tests/unit/test_commands.py`: entries mirror registry with per-snapshot `enabled`, memoization/value-equality
-- [ ] T005 Implement `src/intui/kit/state/commands.py`: `Command`, `CommandRegistry`, `CommandEntry`/`CommandView`, `command_view`, `match_score`, `filter_commands`
-- [ ] T006 Export the command model from `src/intui/kit/state/__init__.py` and add the command surfaces to the lazy exports in `src/intui/kit/__init__.py`
+- [X] T002 [P] Failing tests for registry + availability in `tests/unit/test_commands.py`: duplicate-id rejection, ordered `commands`, `get`, `is_available` over a snapshot, `risky` mirrors `intent.risky`
+- [X] T003 [P] Failing tests for the matcher in `tests/unit/test_commands.py`: `match_score` case-insensitive subsequence (None on no match, higher for contiguous/word-boundary), `filter_commands` ranks + falls back to registry order on empty query
+- [X] T004 [P] Failing tests for `command_view` selector in `tests/unit/test_commands.py`: entries mirror registry with per-snapshot `enabled`, memoization/value-equality
+- [X] T005 Implement `src/intui/kit/state/commands.py`: `Command`, `CommandRegistry`, `CommandEntry`/`CommandView`, `command_view`, `match_score`, `filter_commands`
+- [X] T006 Export the command model from `src/intui/kit/state/__init__.py` and add the command surfaces to the lazy exports in `src/intui/kit/__init__.py`
 
 **Checkpoint**: command model complete and headlessly tested.
 
 ## Phase 3: User Story 1 — Bottom command menu (P1) [MVP]
 
-- [ ] T007 [US1] Pilot tests (write first) in `tests/snapshot/test_command_bar.py`: renders key+label row from registry, key press delivers intent, click delivers intent, disabled command renders marked and does not fire, availability change updates only affected entries, risky command routes through confirm, overflow shows a "more" affordance
-- [ ] T008 [US1] Implement `CommandBar` in `src/intui/kit/command_bar.py` (BoundContainer over `command_view`; key bindings; invoke via `post_intent`; fire-time availability re-check; resize-driven overflow)
-- [ ] T009 [US1] Add a `CommandBar` to `examples/mission_control/app.py` with a few commands incl. one risky; verify `uv run python -m examples.mission_control`
+- [X] T007 [US1] Pilot tests (write first) in `tests/snapshot/test_command_bar.py`: renders key+label row from registry, key press delivers intent, click delivers intent, disabled command renders marked and does not fire, availability change updates only affected entries, risky command routes through confirm, overflow shows a "more" affordance
+- [X] T008 [US1] Implement `CommandBar` in `src/intui/kit/command_bar.py` (BoundContainer over `command_view`; key bindings; invoke via `post_intent`; fire-time availability re-check; resize-driven overflow)
+- [X] T009 [US1] Add a `CommandBar` to `examples/mission_control/app.py` with a few commands incl. one risky; verify `uv run python -m examples.mission_control`
 
 **Checkpoint**: menu invokes intents, respects availability + risky confirm.
 
