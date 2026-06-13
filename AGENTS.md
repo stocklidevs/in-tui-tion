@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/001-core-library-foundation/plan.md`
+`specs/002-task-visualization-kit/plan.md`
 
 Key facts: Python 3.11–3.13 library (`src/intui/`, hatchling + uv, pytest);
 built on Textual 6.x, but the pipeline core (`intui.events/state/viewmodels/
