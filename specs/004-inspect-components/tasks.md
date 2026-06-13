@@ -12,18 +12,18 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Add ruff per-file-ignores for `src/intui/kit/diff_viewer.py` and `src/intui/kit/evidence_panel.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
+- [X] T001 Add ruff per-file-ignores for `src/intui/kit/diff_viewer.py` and `src/intui/kit/evidence_panel.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
 
 ## Phase 2: Foundational (artifact model + parser + redactor — blocks all stories)
 
-- [ ] T002 [P] Failing tests for the unified-diff parser in `tests/unit/test_diff_parse.py`: multi-file headers, hunk line numbers, add/remove/context classification + counts, `Binary files differ` → no_text_diff, malformed lines tolerated, mixed path separators normalized
-- [ ] T003 [P] Failing tests for the redactor in `tests/unit/test_redact.py` (SC-003): absolute Windows + POSIX paths, URLs with credentials, token-like strings (`sk-…`, long high-entropy), redaction of an unsafe substring inside a larger string, safe text left intact
-- [ ] T004 [P] Failing tests for artifact models in `tests/unit/test_artifacts.py`: frozen/value-equality of FileDiff/DiffArtifact/EvidenceMetric/EvidenceArtifact/ArtifactStore
-- [ ] T005 Implement `src/intui/kit/state/artifacts.py` part 1: models, `parse_unified_diff`, `redact`
-- [ ] T006 [P] Failing tests for the reduction + selectors in `tests/unit/test_artifacts.py`: `artifacts_slice` maps `diff_ready`/`evidence_ready` (structured + unified text), latest-of-type wins, unknown events pass through; `diff_view`/`evidence_view` shape, default public-safe redaction on, `public_safe=False` shows full, memoization/value-equality
-- [ ] T007 Implement `artifacts.py` part 2: `artifacts_slice`, `DiffView`/`EvidenceView` + `diff_view`/`evidence_view` (redaction default-on)
-- [ ] T008 Export the artifact model from `src/intui/kit/state/__init__.py` and add the components to the lazy exports in `src/intui/kit/__init__.py`
-- [ ] T009 Create committed fixture `tests/replay/fixtures/inspect_run.jsonl` (a `diff_ready` over several files incl. one binary + unsafe paths, an `evidence_ready` with scalar/list/status metrics incl. an unsafe value) and determinism test in `tests/replay/test_inspect_fixture.py`
+- [X] T002 [P] Failing tests for the unified-diff parser in `tests/unit/test_diff_parse.py`: multi-file headers, hunk line numbers, add/remove/context classification + counts, `Binary files differ` → no_text_diff, malformed lines tolerated, mixed path separators normalized
+- [X] T003 [P] Failing tests for the redactor in `tests/unit/test_redact.py` (SC-003): absolute Windows + POSIX paths, URLs with credentials, token-like strings (`sk-…`, long high-entropy), redaction of an unsafe substring inside a larger string, safe text left intact
+- [X] T004 [P] Failing tests for artifact models in `tests/unit/test_artifacts.py`: frozen/value-equality of FileDiff/DiffArtifact/EvidenceMetric/EvidenceArtifact/ArtifactStore
+- [X] T005 Implement `src/intui/kit/state/artifacts.py` part 1: models, `parse_unified_diff`, `redact`
+- [X] T006 [P] Failing tests for the reduction + selectors in `tests/unit/test_artifacts.py`: `artifacts_slice` maps `diff_ready`/`evidence_ready` (structured + unified text), latest-of-type wins, unknown events pass through; `diff_view`/`evidence_view` shape, default public-safe redaction on, `public_safe=False` shows full, memoization/value-equality
+- [X] T007 Implement `artifacts.py` part 2: `artifacts_slice`, `DiffView`/`EvidenceView` + `diff_view`/`evidence_view` (redaction default-on)
+- [X] T008 Export the artifact model from `src/intui/kit/state/__init__.py` and add the components to the lazy exports in `src/intui/kit/__init__.py`
+- [X] T009 Create committed fixture `tests/replay/fixtures/inspect_run.jsonl` (a `diff_ready` over several files incl. one binary + unsafe paths, an `evidence_ready` with scalar/list/status metrics incl. an unsafe value) and determinism test in `tests/replay/test_inspect_fixture.py`
 
 **Checkpoint**: artifact model, parser, redactor, selectors complete and headlessly tested.
 
