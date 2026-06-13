@@ -38,10 +38,16 @@ app adapter -> event stream -> reducer/state store -> view models
 
 ```sh
 uv sync
-uv run python -m examples.hello_replay      # the foundation demo
+uv run python -m examples.operator_console  # the flagship: modes + whole kit
 uv run python -m examples.mission_control   # the component kit demo
+uv run python -m examples.hello_replay      # the foundation demo
 uv run pytest                               # headless test suite
 ```
+
+The **operator console** is the flagship — an agentic workbench with
+Plan/Build/Inspect/Review modes and a conversation surface, composing every kit
+component over one recorded run. See
+[examples/operator_console/README.md](examples/operator_console/README.md).
 
 See [examples/hello_replay/README.md](examples/hello_replay/README.md) and
 the feature quickstart at

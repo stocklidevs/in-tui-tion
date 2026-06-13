@@ -27,6 +27,15 @@ from intui.kit.state.commands import (
     filter_commands,
     match_score,
 )
+from intui.kit.state.conversation import (
+    ConversationEntry,
+    ConversationKind,
+    ConversationRow,
+    ConversationState,
+    ConversationView,
+    conversation_slice,
+    conversation_view,
+)
 from intui.kit.state.model import (
     CORE_STATUSES,
     STATUS_PRESENTATION,
@@ -36,6 +45,14 @@ from intui.kit.state.model import (
     TaskView,
     WorkItemView,
     status_presentation,
+)
+from intui.kit.state.modes import (
+    ModeEntry,
+    ModeState,
+    ModeView,
+    mode_slice,
+    mode_view,
+    switch_mode_intent,
 )
 from intui.kit.state.reduce import taskboard_slice
 from intui.kit.state.selectors import (
@@ -63,6 +80,11 @@ __all__ = [
     "CommandEntry",
     "CommandRegistry",
     "CommandView",
+    "ConversationEntry",
+    "ConversationKind",
+    "ConversationRow",
+    "ConversationState",
+    "ConversationView",
     "DiffArtifact",
     "DiffFileRow",
     "DiffLine",
@@ -73,6 +95,9 @@ __all__ = [
     "EvidenceRow",
     "EvidenceView",
     "FileDiff",
+    "ModeEntry",
+    "ModeState",
+    "ModeView",
     "ChipView",
     "ItemRow",
     "LaneRow",
@@ -86,15 +111,20 @@ __all__ = [
     "artifacts_slice",
     "chip_view",
     "command_view",
+    "conversation_slice",
+    "conversation_view",
     "diff_view",
     "evidence_view",
     "filter_commands",
     "lane_status_view",
     "lanes_view",
     "match_score",
+    "mode_slice",
+    "mode_view",
     "parse_unified_diff",
     "redact",
     "status_presentation",
+    "switch_mode_intent",
     "taskboard_from",
     "taskboard_slice",
     "tree_view",

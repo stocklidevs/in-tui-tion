@@ -177,6 +177,53 @@ async def test_diff_viewer_keyboard_navigable() -> None:
         assert app.viewer.selected_path() in ("one.py", "two.py")
 
 
+async def test_mode_switching_keyboard_only_and_color_free() -> None:
+    # SC-002/SC-004: modes switch by keyboard; active mode marked non-color.
+    from textual.app import ComposeResult
+
+    from intui.actions import Intent
+    from intui.app import IntuiApp
+    from intui.events import Event, Scope
+    from intui.kit import ModeStrip
+    from intui.kit.state import mode_slice, mode_view
+    from intui.state import Store, compose_reducers
+
+    modes = ("Plan", "Build", "Inspect", "Review")
+
+    class MA(IntuiApp):
+        def __init__(self, **kwargs: object) -> None:
+            super().__init__(**kwargs)  # type: ignore[arg-type]
+            self.strip = ModeStrip(mode_view(), keys={"2": "Build"})
+
+        def compose(self) -> ComposeResult:
+            yield self.strip
+
+        async def handle_intent(self, intent: Intent) -> None:
+            if intent.name == "switch_mode":
+                from datetime import UTC, datetime
+
+                self.store.ingest(
+                    Event(
+                        version="1",
+                        event_id="mc",
+                        run_id="r",
+                        timestamp=datetime(2026, 6, 13, tzinfo=UTC),
+                        type="mode_changed",
+                        scope=Scope(),
+                        payload={"mode": intent.payload["mode"]},
+                    )
+                )
+
+    store = Store(compose_reducers(modes=mode_slice(modes)))
+    app = MA(store=store)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        await pilot.press("2")
+        await pilot.pause(0.05)
+        assert store.snapshot.slice("modes").current == "Build"
+        assert "▸ Build" in app.strip.strip_text()  # active marker, non-color
+
+
 async def test_kit_chip_keyboard_operable() -> None:
     # SC-004: the chip expands/collapses by keyboard alone.
     from textual.app import ComposeResult
