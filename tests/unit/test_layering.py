@@ -16,6 +16,7 @@ CORE_PACKAGES = [
     "intui.viewmodels",
     "intui.actions",
     "intui.theming",
+    "intui.kit.state",
 ]
 
 BANNED_PREFIXES = ("textual", "rich")
