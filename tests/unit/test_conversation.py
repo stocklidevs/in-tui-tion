@@ -85,3 +85,23 @@ def test_conversation_view_memoized() -> None:
 
 def test_empty_conversation_view() -> None:
     assert conversation_view()(make_store().snapshot).entries == ()
+
+
+def test_prompt_message_event_builds_user_message() -> None:
+    from intui.kit.state import ConversationKind, prompt_message_event
+
+    store = make_store()
+    store.ingest(prompt_message_event("build me a service"))
+    entry = store.snapshot.slice("conversation").entries[0]
+    assert entry.role == "user"
+    assert entry.kind is ConversationKind.MESSAGE
+    assert entry.text == "build me a service"
+
+
+def test_prompt_message_event_unique_ids() -> None:
+    from intui.kit.state import prompt_message_event
+
+    a = prompt_message_event("one")
+    b = prompt_message_event("two")
+    assert a.event_id != b.event_id  # distinct so the stream does not dedupe
+

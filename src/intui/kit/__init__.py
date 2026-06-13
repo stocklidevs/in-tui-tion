@@ -8,6 +8,7 @@ engine — the layering guard depends on this.
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from intui.kit.activity_strip import ActivityStrip
     from intui.kit.chip import TaskCounterChip
     from intui.kit.command_bar import CommandBar
     from intui.kit.command_palette import CommandPalette
@@ -16,9 +17,11 @@ if TYPE_CHECKING:
     from intui.kit.evidence_panel import EvidencePanel
     from intui.kit.lanes import LanesPanel
     from intui.kit.mode_strip import ModeStrip
+    from intui.kit.prompt_input import PromptInput
     from intui.kit.tree import TaskTree
 
 __all__ = [
+    "ActivityStrip",
     "CommandBar",
     "CommandPalette",
     "ConversationLog",
@@ -26,6 +29,7 @@ __all__ = [
     "EvidencePanel",
     "LanesPanel",
     "ModeStrip",
+    "PromptInput",
     "TaskCounterChip",
     "TaskTree",
 ]
@@ -40,6 +44,8 @@ _LAZY = {
     "EvidencePanel": ("intui.kit.evidence_panel", "EvidencePanel"),
     "ModeStrip": ("intui.kit.mode_strip", "ModeStrip"),
     "ConversationLog": ("intui.kit.conversation_log", "ConversationLog"),
+    "PromptInput": ("intui.kit.prompt_input", "PromptInput"),
+    "ActivityStrip": ("intui.kit.activity_strip", "ActivityStrip"),
 }
 
 

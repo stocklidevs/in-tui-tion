@@ -7,15 +7,18 @@ unknown roles are preserved, not dropped.
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
-from intui.events.envelope import Event
+from intui.events.envelope import Event, Scope
 from intui.state.snapshot import Snapshot
 from intui.viewmodels.selector import Selector
 
 _KNOWN_ROLES = {"agent", "user", "system"}
+_prompt_counter = itertools.count()
 
 
 class ConversationKind(Enum):
@@ -95,6 +98,25 @@ def conversation_view(slice_name: str = "conversation") -> Selector[Conversation
         return ConversationView(entries=tuple(_row(e) for e in state.entries))
 
     return Selector(project)
+
+
+def prompt_message_event(text: str, run_id: str = "", event_id: str | None = None) -> Event:
+    """Build the ``message_added`` (role=user) event for a submitted prompt.
+
+    Lets an application append a prompt submission to the conversation in one
+    call. Event ids are unique by default so the stream does not dedupe them.
+    """
+    if event_id is None:
+        event_id = f"prompt-{next(_prompt_counter)}-{datetime.now(tz=UTC).timestamp()}"
+    return Event(
+        version="1",
+        event_id=event_id,
+        run_id=run_id,
+        timestamp=datetime.now(tz=UTC),
+        type="message_added",
+        scope=Scope(),
+        payload={"role": "user", "text": text},
+    )
 
 
 def _row(entry: ConversationEntry) -> ConversationRow:

@@ -12,29 +12,29 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Add ruff per-file-ignores for `src/intui/kit/prompt_input.py` and `src/intui/kit/activity_strip.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
+- [X] T001 Add ruff per-file-ignores for `src/intui/kit/prompt_input.py` and `src/intui/kit/activity_strip.py` in `pyproject.toml` (kit.state stays banned; the layering guard already covers `intui.kit.state`)
 
 ## Phase 2: Foundational (engine-free mapping + helper)
 
-- [ ] T002 [P] Failing tests for the activity mapping in `tests/unit/test_activity.py`: every R6 state in `ACTIVITY_STYLES` has a distinct glyph+label, motion per state (thinking/verifying swoosh, waiting/history pulse, failure strobe, passed/idle steady), `activity_style` fallback for unknown state keeps raw label
-- [ ] T003 [P] Failing tests for `prompt_message_event` in `tests/unit/test_conversation.py`: builds a `message_added` role=user event with the text; reduces into a user conversation entry
-- [ ] T004 Implement `src/intui/kit/state/activity.py` (ACTIVITY_STATES, ACTIVITY_STYLES, activity_style)
-- [ ] T005 Implement `prompt_message_event` in `src/intui/kit/state/conversation.py`
-- [ ] T006 Export both from `src/intui/kit/state/__init__.py` and add the widgets to the lazy exports in `src/intui/kit/__init__.py`
+- [X] T002 [P] Failing tests for the activity mapping in `tests/unit/test_activity.py`: every R6 state in `ACTIVITY_STYLES` has a distinct glyph+label, motion per state (thinking/verifying swoosh, waiting/history pulse, failure strobe, passed/idle steady), `activity_style` fallback for unknown state keeps raw label
+- [X] T003 [P] Failing tests for `prompt_message_event` in `tests/unit/test_conversation.py`: builds a `message_added` role=user event with the text; reduces into a user conversation entry
+- [X] T004 Implement `src/intui/kit/state/activity.py` (ACTIVITY_STATES, ACTIVITY_STYLES, activity_style)
+- [X] T005 Implement `prompt_message_event` in `src/intui/kit/state/conversation.py`
+- [X] T006 Export both from `src/intui/kit/state/__init__.py` and add the widgets to the lazy exports in `src/intui/kit/__init__.py`
 
 **Checkpoint**: activity mapping + event helper complete and headlessly tested.
 
 ## Phase 3: User Story 1 — Prompt surface (P1) [MVP]
 
-- [ ] T007 [US1] Pilot tests (write first) in `tests/snapshot/test_prompt_input.py`: typing + Enter posts `prompt_submitted` with the text and clears, empty/whitespace submits nothing, prompt is keyboard-focusable
-- [ ] T008 [US1] Implement `PromptInput` in `src/intui/kit/prompt_input.py` (wraps engine Input; on submit posts the intent via `post_intent`, clears; no-empty guard)
+- [X] T007 [US1] Pilot tests (write first) in `tests/snapshot/test_prompt_input.py`: typing + Enter posts `prompt_submitted` with the text and clears, empty/whitespace submits nothing, prompt is keyboard-focusable
+- [X] T008 [US1] Implement `PromptInput` in `src/intui/kit/prompt_input.py` (wraps engine Input; on submit posts the intent via `post_intent`, clears; no-empty guard)
 
 **Checkpoint**: typing a prompt delivers an intent and clears.
 
 ## Phase 4: User Story 2 — Activity strip (P1)
 
-- [ ] T009 [US2] Pilot tests (write first) in `tests/snapshot/test_activity_strip.py`: each state renders its color/motion + textual label (identifiable without color), unknown state neutral fallback, width-responsive track keeps the label on resize
-- [ ] T010 [US2] Implement `ActivityStrip` in `src/intui/kit/activity_strip.py` (Signal subclass with `ACTIVITY_STYLES`; track length follows widget width on mount/resize, min track keeps label)
+- [X] T009 [US2] Pilot tests (write first) in `tests/snapshot/test_activity_strip.py`: each state renders its color/motion + textual label (identifiable without color), unknown state neutral fallback, width-responsive track keeps the label on resize
+- [X] T010 [US2] Implement `ActivityStrip` in `src/intui/kit/activity_strip.py` (Signal subclass with `ACTIVITY_STYLES`; track length follows widget width on mount/resize, min track keeps label)
 
 **Checkpoint**: the KITT strip reflects every activity state prominently.
 
