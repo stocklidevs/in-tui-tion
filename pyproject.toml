@@ -48,6 +48,11 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "TID"]
 [tool.ruff.lint.per-file-ignores]
 "src/intui/widgets/**" = ["TID251"]
 "src/intui/app.py" = ["TID251"]
+# Kit components are layer-2 rendering code; intui/kit/state stays banned.
+"src/intui/kit/__init__.py" = ["TID251"]
+"src/intui/kit/chip.py" = ["TID251"]
+"src/intui/kit/tree.py" = ["TID251"]
+"src/intui/kit/lanes.py" = ["TID251"]
 "tests/snapshot/**" = ["TID251"]
 "tests/replay/test_responsiveness.py" = ["TID251"]  # drives a real app under load
 "examples/**" = ["TID251"]

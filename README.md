@@ -22,16 +22,22 @@ app adapter -> event stream -> reducer/state store -> view models
    engine-free pipeline: envelopes, streams, reducers, snapshots, selectors,
    intents, themes. Imports no terminal engine (enforced by lint + test).
 2. **Rendering layer** (`intui.widgets`, `intui.app`) — built on
-   [Textual](https://textual.textualize.io/): bound widgets, render-coalescing
-   bridge, the Signal motion primitive, app shell with confirmation flow.
-3. **Examples** (`examples/`) — first-class runnable demos of every feature.
+   [Textual](https://textual.textualize.io/): bound widgets/containers,
+   render-coalescing bridge, the Signal motion primitive, app shell with
+   confirmation flow.
+3. **Component kit** (`intui.kit`) — high-level, data-driven components: a
+   task counter chip, a two-level task tree, and parallel lanes, over a
+   shared engine-free task/lane state model (`intui.kit.state`) with a
+   ready-made reduction of the standard event vocabulary.
+4. **Examples** (`examples/`) — first-class runnable demos of every feature.
 
 ## Quickstart
 
 ```sh
 uv sync
-uv run python -m examples.hello_replay   # the foundation demo
-uv run pytest                            # headless test suite
+uv run python -m examples.hello_replay      # the foundation demo
+uv run python -m examples.mission_control   # the component kit demo
+uv run pytest                               # headless test suite
 ```
 
 See [examples/hello_replay/README.md](examples/hello_replay/README.md) and

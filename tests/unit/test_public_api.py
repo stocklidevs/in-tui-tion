@@ -34,11 +34,28 @@ CONTRACT: dict[str, set[str]] = {
     "intui.actions": {"Intent", "IntentHandler"},
     "intui.theming": {"Theme", "DEFAULT_THEME"},
     # Rendering layer (imports the terminal engine):
-    "intui.widgets": {"BoundWidget", "MotionMode", "StatusStyle", "Signal"},
+    "intui.widgets": {"BoundContainer", "BoundWidget", "MotionMode", "StatusStyle", "Signal"},
     "intui.app": {"IntuiApp"},
+    # Component kit (feature 002):
+    "intui.kit.state": {
+        "TaskView",
+        "WorkItemView",
+        "LaneView",
+        "TaskBoardState",
+        "UNASSIGNED_KEY",
+        "taskboard_slice",
+        "chip_view",
+        "tree_view",
+        "lanes_view",
+        "STATUS_PRESENTATION",
+    },
+    "intui.kit": {"TaskCounterChip", "TaskTree", "LanesPanel"},
 }
 
-CORE_MODULES = [m for m in CONTRACT if m not in ("intui.widgets", "intui.app")]
+# The root package re-exports only the foundation's engine-free core; the
+# rendering layer and the kit are imported from their own paths.
+_NON_ROOT = ("intui.widgets", "intui.app", "intui.kit", "intui.kit.state")
+CORE_MODULES = [m for m in CONTRACT if m not in _NON_ROOT]
 
 
 @pytest.mark.parametrize("module_name", list(CONTRACT))
