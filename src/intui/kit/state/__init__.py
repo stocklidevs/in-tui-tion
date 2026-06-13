@@ -1,5 +1,6 @@
 """intui.kit.state: engine-free task/lane state model (layer 2 core)."""
 
+from intui.kit.state.activity import ACTIVITY_STATES, ACTIVITY_STYLES, activity_style
 from intui.kit.state.artifacts import (
     ArtifactStore,
     DiffArtifact,
@@ -35,6 +36,7 @@ from intui.kit.state.conversation import (
     ConversationView,
     conversation_slice,
     conversation_view,
+    prompt_message_event,
 )
 from intui.kit.state.model import (
     CORE_STATUSES,
@@ -71,6 +73,8 @@ from intui.kit.state.selectors import (
 )
 
 __all__ = [
+    "ACTIVITY_STATES",
+    "ACTIVITY_STYLES",
     "CORE_STATUSES",
     "STATUS_PRESENTATION",
     "UNASSIGNED_KEY",
@@ -108,11 +112,13 @@ __all__ = [
     "TaskView",
     "TreeView",
     "WorkItemView",
+    "activity_style",
     "artifacts_slice",
     "chip_view",
     "command_view",
     "conversation_slice",
     "conversation_view",
+    "prompt_message_event",
     "diff_view",
     "evidence_view",
     "filter_commands",

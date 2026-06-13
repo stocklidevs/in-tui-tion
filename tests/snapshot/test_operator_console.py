@@ -46,3 +46,30 @@ async def test_console_reaches_completion_and_shows_artifacts() -> None:
         rows = evidence_view()(app.store.snapshot).rows
         workdir = next(r for r in rows if r.key == "workdir")
         assert "run-42" not in workdir.value
+
+
+async def test_prompt_submission_appears_and_is_acknowledged() -> None:
+    from textual.widgets import Input
+
+    app = build_app(events_per_second=2000.0)
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        # Submit a prompt by keyboard.
+        app.query_one("PromptInput").query_one(Input).focus()
+        for ch in "ship it":
+            await pilot.press(ch if ch != " " else "space")
+        await pilot.press("enter")
+        await pilot.pause(0.05)
+        # User message appears immediately.
+        convo = app.store.snapshot.slice("conversation")
+        assert any(e.role == "user" and e.text == "ship it" for e in convo.entries)
+        # The activity strip reflects the working state.
+        assert app.store.snapshot.slice("run_status") == "thinking"
+        # The scripted agent reply follows after the timer.
+        for _ in range(60):
+            await pilot.pause(0.05)
+            convo = app.store.snapshot.slice("conversation")
+            if any(e.role == "agent" and "Acknowledged" in e.text for e in convo.entries):
+                break
+        assert any(e.role == "agent" and "Acknowledged" in e.text for e in convo.entries)
+        assert app.store.snapshot.slice("run_status") == "passed"

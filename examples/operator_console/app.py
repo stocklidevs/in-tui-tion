@@ -19,12 +19,14 @@ from intui.actions import Intent
 from intui.app import IntuiApp
 from intui.events import Event, JsonlReplaySource, Scope
 from intui.kit import (
+    ActivityStrip,
     CommandBar,
     ConversationLog,
     DiffViewer,
     EvidencePanel,
     LanesPanel,
     ModeStrip,
+    PromptInput,
     TaskCounterChip,
     TaskTree,
 )
@@ -40,44 +42,37 @@ from intui.kit.state import (
     lanes_view,
     mode_slice,
     mode_view,
+    prompt_message_event,
     taskboard_slice,
     tree_view,
 )
 from intui.state import Snapshot, Store, compose_reducers
-from intui.theming import MotionMode, StatusStyle
 from intui.viewmodels import selector
-from intui.widgets import Signal
 
 RECORDING = Path(__file__).parent / "recording.jsonl"
 MODES = ("Plan", "Build", "Inspect", "Review")
 MODE_KEYS = {"1": "Plan", "2": "Build", "3": "Inspect", "4": "Review"}
 
-RUN_SIGNAL_STYLES = {
-    "running": StatusStyle(color="thinking", motion=MotionMode.SWOOSH, glyph="»", label="working"),
-    "verifying": StatusStyle(
-        color="verifying", motion=MotionMode.SWOOSH, glyph="≈", label="verifying"
-    ),
-    "passed": StatusStyle(color="success", motion=MotionMode.STEADY, glyph="✔", label="passed"),
-    "blocked": StatusStyle(color="waiting", motion=MotionMode.PULSE, glyph="▲", label="blocked"),
-    "failed": StatusStyle(color="failure", motion=MotionMode.STROBE, glyph="✘", label="failed"),
-    "idle": StatusStyle(color="muted", motion=MotionMode.STEADY, glyph="·", label="idle"),
-}
-
 
 def run_status_reducer(status: str, event: Event) -> str:
+    """Map run + synthetic events to R6 activity states for the KITT strip."""
+    if event.type == "activity_set":
+        return str(event.payload["state"])
     if event.type in {"run_started", "task_started", "subagent_started"}:
-        return "running"
+        return "thinking"
     if event.type == "task_blocked":
-        return "blocked"
+        return "waiting"
     if event.type == "gate_started":
         return "verifying"
-    if event.type in {"run_completed"}:
+    if event.type == "run_failed":
+        return "failure"
+    if event.type == "run_completed":
         return "passed"
     return status
 
 
 @selector
-def run_signal_status(snapshot: Snapshot) -> str:
+def activity_state(snapshot: Snapshot) -> str:
     return snapshot.slice("run_status")
 
 
@@ -97,18 +92,20 @@ class OperatorConsole(IntuiApp):
     TITLE = "in-TUI-tion · operator console"
     BINDINGS = [("q", "quit", "Quit"), ("ctrl+p", "palette", "Commands")]
     CSS = """
+    ActivityStrip { dock: top; height: 1; padding: 0 1; background: $panel; }
     ModeStrip { dock: top; padding: 0 1; background: $panel; }
     #body { height: 1fr; }
     #conversation-col { width: 38; border-right: solid $panel; }
     #mode-content { width: 1fr; padding: 0 1; }
     .col-title { text-style: bold; color: $text-muted; }
-    Signal { dock: top; height: 1; padding: 0 1; }
     EvidencePanel { height: auto; max-height: 50%; }
+    PromptInput { dock: bottom; }
     CommandBar { dock: bottom; background: $panel; }
     """
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield ActivityStrip(activity_state)
         yield ModeStrip(mode_view(), keys=MODE_KEYS)
         with Horizontal(id="body"):
             with VerticalScroll(id="conversation-col"):
@@ -119,7 +116,6 @@ class OperatorConsole(IntuiApp):
                     yield Label("Plan", classes="col-title")
                     yield TaskCounterChip(chip_view())
                 with VerticalScroll(id="pane-Build"):
-                    yield Signal(run_signal_status, RUN_SIGNAL_STYLES)
                     yield TaskCounterChip(chip_view())
                     yield Label("Tasks", classes="col-title")
                     yield TaskTree(tree_view())
@@ -133,6 +129,7 @@ class OperatorConsole(IntuiApp):
                 with VerticalScroll(id="pane-Review"):
                     yield Label("Evidence", classes="col-title")
                     yield EvidencePanel(evidence_view())
+        yield PromptInput()
         yield CommandBar(command_registry())
         yield Footer()
 
@@ -150,24 +147,42 @@ class OperatorConsole(IntuiApp):
     def action_palette(self) -> None:
         self.open_command_palette(command_registry())
 
+    def _emit(self, type_: str, **payload: object) -> None:
+        self.store.ingest(
+            Event(
+                version="1",
+                event_id=f"{type_}-{datetime.now(tz=UTC).timestamp()}",
+                run_id="run-console",
+                timestamp=datetime.now(tz=UTC),
+                type=type_,
+                scope=Scope(),
+                payload=payload,
+            )
+        )
+
     async def handle_intent(self, intent: Intent) -> None:
         if intent.name == "switch_mode":
-            self.store.ingest(
-                Event(
-                    version="1",
-                    event_id=f"switch-{datetime.now(tz=UTC).timestamp()}",
-                    run_id="run-console",
-                    timestamp=datetime.now(tz=UTC),
-                    type="mode_changed",
-                    scope=Scope(),
-                    payload={"mode": intent.payload["mode"]},
-                )
-            )
+            self._emit("mode_changed", mode=intent.payload["mode"])
             return
         if intent.name == "open_palette":
             self.open_command_palette(command_registry())
             return
+        if intent.name == "prompt_submitted":
+            self._handle_prompt(str(intent.payload["text"]))
+            return
         self.notify(f"intent: {intent.name}", timeout=2.0)
+
+    def _handle_prompt(self, text: str) -> None:
+        # The full loop: user message -> "thinking" activity -> scripted reply.
+        # (No live agent yet; only the reply is simulated.)
+        self.store.ingest(prompt_message_event(text, run_id="run-console"))
+        self._emit("activity_set", state="thinking")
+        reply = f"Acknowledged: “{text}”. (No live agent wired yet — this is a scripted reply.)"
+        self.set_timer(1.2, lambda: self._finish_prompt(reply))
+
+    def _finish_prompt(self, reply: str) -> None:
+        self._emit("message_added", role="agent", text=reply)
+        self._emit("activity_set", state="passed")
 
 
 def build_app(events_per_second: float = 4.0) -> OperatorConsole:

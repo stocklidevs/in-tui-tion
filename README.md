@@ -45,8 +45,9 @@ uv run pytest                               # headless test suite
 ```
 
 The **operator console** is the flagship — an agentic workbench with
-Plan/Build/Inspect/Review modes and a conversation surface, composing every kit
-component over one recorded run. See
+Plan/Build/Inspect/Review modes, a conversation surface, a live prompt you can
+type into, and the signature full-width KITT activity strip, composing every
+kit component over one recorded run. See
 [examples/operator_console/README.md](examples/operator_console/README.md).
 
 See [examples/hello_replay/README.md](examples/hello_replay/README.md) and
