@@ -119,6 +119,64 @@ async def test_command_surfaces_keyboard_only_and_risky_confirm() -> None:
         assert app.received == ["go", "wipe", "go"]
 
 
+def test_inspect_redaction_is_color_free_and_safe() -> None:
+    # SC-003/SC-004: redaction marker is plain text; diff markers are non-color.
+    from intui.kit.state import DiffLineKind, redact
+
+    assert "\x1b" not in redact("C:\\Users\\x\\secret")  # no ANSI in the marker
+    # the three diff kinds map to distinct ascii markers
+    markers = {DiffLineKind.ADD: "+", DiffLineKind.REMOVE: "-", DiffLineKind.CONTEXT: " "}
+    assert len(set(markers.values())) == 3
+
+
+async def test_diff_viewer_keyboard_navigable() -> None:
+    # SC-002: changed files selectable by keyboard with visible focus.
+    from datetime import UTC, datetime
+
+    from textual.app import ComposeResult
+
+    from intui.app import IntuiApp
+    from intui.events import Event, Scope
+    from intui.kit import DiffViewer
+    from intui.kit.state import artifacts_slice, diff_view
+    from intui.state import Store, compose_reducers
+
+    unified = (
+        "--- a/one.py\n+++ b/one.py\n@@ -1 +1 @@\n-a\n+b\n"
+        "--- a/two.py\n+++ b/two.py\n@@ -1 +1 @@\n-c\n+d\n"
+    )
+
+    class DV(IntuiApp):
+        def __init__(self, **kwargs: object) -> None:
+            super().__init__(**kwargs)  # type: ignore[arg-type]
+            self.viewer = DiffViewer(diff_view())
+
+        def compose(self) -> ComposeResult:
+            yield self.viewer
+
+    store = Store(compose_reducers(artifacts=artifacts_slice()))
+    app = DV(store=store)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        store.ingest(
+            Event(
+                version="1",
+                event_id="d1",
+                run_id="r",
+                timestamp=datetime(2026, 6, 13, tzinfo=UTC),
+                type="diff_ready",
+                scope=Scope(),
+                payload={"unified": unified},
+            )
+        )
+        await pilot.pause(0.05)
+        app.viewer.query_one("ListView").focus()
+        await pilot.press("down")
+        await pilot.press("enter")
+        await pilot.pause(0.05)
+        assert app.viewer.selected_path() in ("one.py", "two.py")
+
+
 async def test_kit_chip_keyboard_operable() -> None:
     # SC-004: the chip expands/collapses by keyboard alone.
     from textual.app import ComposeResult

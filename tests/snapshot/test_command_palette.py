@@ -20,8 +20,13 @@ def flag_reducer(flag: bool, event: Event) -> bool:
 def registry() -> CommandRegistry:
     return CommandRegistry(
         [
-            Command("approve", "Approve plan", Intent("approve"), key="a",
-                    available=lambda s: s.slice("ready")),
+            Command(
+                "approve",
+                "Approve plan",
+                Intent("approve"),
+                key="a",
+                available=lambda s: s.slice("ready"),
+            ),
             Command("cancel", "Cancel run", Intent("cancel", risky=True), key="c"),
             Command("diff", "Open diff", Intent("open_diff"), key="d"),
             Command("evidence", "Open evidence", Intent("open_evidence"), key="e"),

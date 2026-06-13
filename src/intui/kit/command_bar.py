@@ -92,9 +92,7 @@ class CommandBar(BoundContainer):
     # --- Introspection (apps and tests) -------------------------------------
 
     def menu_text(self) -> str:
-        return "  ".join(
-            (f"{e.key} {e.label}" if e.key else e.label) for e in self._view.entries
-        )
+        return "  ".join((f"{e.key} {e.label}" if e.key else e.label) for e in self._view.entries)
 
     def is_enabled(self, command_id: str) -> bool:
         return any(e.id == command_id and e.enabled for e in self._view.entries)

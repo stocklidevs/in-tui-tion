@@ -44,8 +44,13 @@ def event(type_: str) -> Event:
 def sample_registry() -> CommandRegistry:
     return CommandRegistry(
         [
-            Command("approve", "Approve plan", Intent("approve"), key="a",
-                    available=lambda s: s.slice("ready")),
+            Command(
+                "approve",
+                "Approve plan",
+                Intent("approve"),
+                key="a",
+                available=lambda s: s.slice("ready"),
+            ),
             Command("cancel", "Cancel run", Intent("cancel", risky=True), key="c"),
             Command("diff", "Open diff", Intent("open_diff"), key="d"),
         ]

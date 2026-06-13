@@ -33,8 +33,13 @@ def enable_event() -> Event:
 def registry() -> CommandRegistry:
     return CommandRegistry(
         [
-            Command("approve", "Approve", Intent("approve"), key="a",
-                    available=lambda s: s.slice("ready")),
+            Command(
+                "approve",
+                "Approve",
+                Intent("approve"),
+                key="a",
+                available=lambda s: s.slice("ready"),
+            ),
             Command("cancel", "Cancel", Intent("cancel", risky=True), key="c"),
             Command("diff", "Diff", Intent("open_diff"), key="d"),
         ]

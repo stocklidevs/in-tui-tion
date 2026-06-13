@@ -31,6 +31,11 @@ uv run python -m examples.mission_control
 - **Command palette**: `ctrl+p` (or the `p`/"More" command) opens a searchable
   overlay — type to filter, arrows to select, `enter` to run, `escape` to
   close.
+- **Inspect column (right)**: an **evidence panel** (pass rate, ACB score,
+  drift, failure categories, delivered files — with the workdir path redacted)
+  and a **diff viewer** (changed files; select one to see its green/red diff).
+  Both render **public-safe by default**: the absolute config path in the diff
+  and the workdir in evidence are replaced with a `‹redacted›` marker.
 
 ## Keys
 
