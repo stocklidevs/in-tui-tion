@@ -224,6 +224,48 @@ async def test_mode_switching_keyboard_only_and_color_free() -> None:
         assert "▸ Build" in app.strip.strip_text()  # active marker, non-color
 
 
+def test_activity_states_color_free_identifiable() -> None:
+    # SC-003: every activity state has a unique glyph+label (color stripped).
+    from intui.kit.state import ACTIVITY_STATES, ACTIVITY_STYLES
+
+    identities = {(ACTIVITY_STYLES[s].glyph, ACTIVITY_STYLES[s].label) for s in ACTIVITY_STATES}
+    assert len(identities) == len(ACTIVITY_STATES)
+
+
+async def test_prompt_submission_keyboard_only() -> None:
+    # SC-004: a prompt is submittable with the keyboard alone.
+    from textual.app import ComposeResult
+    from textual.widgets import Input
+
+    from intui.actions import Intent
+    from intui.app import IntuiApp
+    from intui.kit import PromptInput
+    from intui.state import Store, compose_reducers
+
+    class PA(IntuiApp):
+        def __init__(self, **kwargs: object) -> None:
+            super().__init__(**kwargs)  # type: ignore[arg-type]
+            self.received: list[str] = []
+            self.prompt = PromptInput()
+
+        def compose(self) -> ComposeResult:
+            yield self.prompt
+
+        async def handle_intent(self, intent: Intent) -> None:
+            self.received.append(intent.payload.get("text", ""))
+
+    store = Store(compose_reducers(n=(lambda s, e: s, 0)))
+    app = PA(store=store)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        app.prompt.query_one(Input).focus()
+        for ch in "go":
+            await pilot.press(ch)
+        await pilot.press("enter")
+        await pilot.pause(0.05)
+        assert app.received == ["go"]
+
+
 async def test_kit_chip_keyboard_operable() -> None:
     # SC-004: the chip expands/collapses by keyboard alone.
     from textual.app import ComposeResult

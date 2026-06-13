@@ -104,4 +104,3 @@ def test_prompt_message_event_unique_ids() -> None:
     a = prompt_message_event("one")
     b = prompt_message_event("two")
     assert a.event_id != b.event_id  # distinct so the stream does not dedupe
-

@@ -22,7 +22,9 @@ ACTIVITY_STATES: tuple[str, ...] = (
 )
 
 ACTIVITY_STYLES: Mapping[str, StatusStyle] = {
-    "thinking": StatusStyle(color="thinking", motion=MotionMode.SWOOSH, glyph="»", label="thinking"),
+    "thinking": StatusStyle(
+        color="thinking", motion=MotionMode.SWOOSH, glyph="»", label="thinking"
+    ),
     "waiting": StatusStyle(color="waiting", motion=MotionMode.PULSE, glyph="?", label="waiting"),
     "verifying": StatusStyle(
         color="verifying", motion=MotionMode.SWOOSH, glyph="≈", label="verifying"

@@ -40,18 +40,18 @@
 
 ## Phase 5: User Story 3 — Wire into the operator console (P1)
 
-- [ ] T011 [US3] Add `ActivityStrip` (docked top, above the mode strip) bound to the run-status selector, extending `run_status_reducer` to emit R6 states (thinking/verifying/passed/failure/idle); add `PromptInput` docked at the bottom (above the command bar)
-- [ ] T012 [US3] Implement the submit→reply loop in `operator_console` `handle_intent`: on `prompt_submitted`, append the user message (`prompt_message_event`), set a transient `thinking` activity state, schedule a scripted agent `message_added` reply, then restore run state
-- [ ] T013 [US3] Pilot test in `tests/snapshot/test_operator_console.py` (extend): submit a prompt → appears as a user entry, an agent reply follows, the activity strip reflects state; keyboard-only submission works
+- [X] T011 [US3] Add `ActivityStrip` (docked top, above the mode strip) bound to the run-status selector, extending `run_status_reducer` to emit R6 states (thinking/verifying/passed/failure/idle); add `PromptInput` docked at the bottom (above the command bar)
+- [X] T012 [US3] Implement the submit→reply loop in `operator_console` `handle_intent`: on `prompt_submitted`, append the user message (`prompt_message_event`), set a transient `thinking` activity state, schedule a scripted agent `message_added` reply, then restore run state
+- [X] T013 [US3] Pilot test in `tests/snapshot/test_operator_console.py` (extend): submit a prompt → appears as a user entry, an agent reply follows, the activity strip reflects state; keyboard-only submission works
 
 **Checkpoint**: the console is operable — type a prompt, watch the strip, read the reply.
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T014 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the shell-api.md names (`intui.kit.state` + `intui.kit`)
-- [ ] T015 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: prompt submission keyboard-only (SC-004); activity states color-free identifiable (SC-003)
-- [ ] T016 [P] Update `examples/operator_console/README.md` (prompt + activity strip, keys) and the root README
-- [ ] T017 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
+- [X] T014 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the shell-api.md names (`intui.kit.state` + `intui.kit`)
+- [X] T015 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: prompt submission keyboard-only (SC-004); activity states color-free identifiable (SC-003)
+- [X] T016 [P] Update `examples/operator_console/README.md` (prompt + activity strip, keys) and the root README
+- [X] T017 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
 
 ## Dependencies & Execution Order
 
