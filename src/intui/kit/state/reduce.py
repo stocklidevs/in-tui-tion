@@ -131,7 +131,7 @@ def _reduce_lane(state: TaskBoardState, event: Event) -> TaskBoardState:
         else (_key(event, event.scope.task_id) if event.scope.task_id else None)
     )
     if event.type == "subagent_completed":
-        status = "completed" if event.status in (None, "passed") else event.status
+        status = "completed" if event.status is None or event.status == "passed" else event.status
         terminal = True
         activity = existing.activity if existing is not None else ""
     elif event.type == "subagent_activity":

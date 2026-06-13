@@ -23,7 +23,7 @@ _NARROW_WIDTH = 30
 
 
 class TaskCounterChip(BoundContainer):
-    BINDINGS = [("enter,space", "toggle", "Tasks")]
+    BINDINGS = [("enter,space", "toggle_tasks", "Tasks")]
 
     can_focus = True
 
@@ -57,13 +57,13 @@ class TaskCounterChip(BoundContainer):
 
     # --- Interaction ---------------------------------------------------------
 
-    def action_toggle(self) -> None:
+    def action_toggle_tasks(self) -> None:
         self.expanded = not self.expanded
         self.set_class(self.expanded, "expanded")
         self._render_all()
 
     def on_click(self) -> None:
-        self.action_toggle()
+        self.action_toggle_tasks()
 
     # --- Rendering -----------------------------------------------------------
 

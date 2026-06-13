@@ -10,12 +10,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.widgets import Footer, Header
+from textual.containers import Horizontal, Vertical
+from textual.widgets import Footer, Header, Label
 
 from intui.app import IntuiApp
 from intui.events import JsonlReplaySource
-from intui.kit import TaskCounterChip
-from intui.kit.state import chip_view, taskboard_slice
+from intui.kit import LanesPanel, TaskCounterChip, TaskTree
+from intui.kit.state import chip_view, lanes_view, taskboard_slice, tree_view
 from intui.state import Store, compose_reducers
 
 RECORDING = Path(__file__).parent / "recording.jsonl"
@@ -26,11 +27,22 @@ class MissionControlApp(IntuiApp):
     BINDINGS = [("q", "quit", "Quit")]
     CSS = """
     TaskCounterChip { dock: top; padding: 0 1; background: $panel; }
+    #columns { height: 1fr; }
+    #tasks-col { width: 2fr; border-right: solid $panel; padding: 0 1; }
+    #lanes-col { width: 1fr; padding: 0 1; }
+    .col-title { text-style: bold; color: $text-muted; }
     """
 
     def compose(self) -> ComposeResult:
         yield Header()
         yield TaskCounterChip(chip_view())
+        with Horizontal(id="columns"):
+            with Vertical(id="tasks-col"):
+                yield Label("Tasks", classes="col-title")
+                yield TaskTree(tree_view())
+            with Vertical(id="lanes-col"):
+                yield Label("Workers", classes="col-title")
+                yield LanesPanel(lanes_view())
         yield Footer()
 
 

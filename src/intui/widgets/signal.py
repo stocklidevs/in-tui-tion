@@ -60,6 +60,16 @@ class Signal(BoundWidget):
         self._frame += 1
         self.update(self._render_frame())
 
+    # --- Introspection -------------------------------------------------------
+
+    def current_motion(self) -> MotionMode:
+        """The motion mode of the bound status's current style."""
+        return self._current_style().motion
+
+    def plain_text(self) -> str:
+        """Color-free rendered text (track + glyph + label)."""
+        return self._render_frame().plain
+
     # --- Rendering -----------------------------------------------------------
 
     def _current_style(self) -> StatusStyle:

@@ -179,6 +179,17 @@ class LanesView:
     lanes: tuple[LaneRow, ...] = ()
 
 
+def lane_status_view(lane_key: str, slice_name: str = "taskboard") -> Selector[str]:
+    """Project a single lane's status (for binding a per-lane Signal)."""
+
+    def project(snapshot: Snapshot) -> str:
+        board = _board(snapshot, slice_name)
+        lane = board.lanes.get(lane_key)
+        return lane.status if lane is not None else "pending"
+
+    return Selector(project)
+
+
 def lanes_view(
     slice_name: str = "taskboard", *, parent_key: str | None = None
 ) -> Selector[LanesView]:
