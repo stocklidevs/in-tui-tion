@@ -7,6 +7,7 @@ prompt, and the StoreBridge for coalesced rendering.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from textual.app import App, ComposeResult
@@ -105,6 +106,7 @@ class IntuiApp(App[None]):
         self.intui_theme = theme if theme is not None else DEFAULT_THEME
         self.bridge = StoreBridge(store, self)
         self._confirmation = ConfirmationFlow(deliver=self._deliver_intent)
+        self._key_callbacks: dict[str, Callable[[], None]] = {}
 
     def on_mount(self) -> None:
         self.set_theme(self.intui_theme)
@@ -117,6 +119,33 @@ class IntuiApp(App[None]):
         self.register_theme(_to_textual_theme(theme))
         self.theme = theme.name
         self.refresh_css()
+
+    def open_command_palette(self, registry: Any) -> None:
+        """Open the command palette for a CommandRegistry.
+
+        Imported lazily so the foundation never depends on the kit at import
+        time (Principle II — dependencies point downward).
+        """
+        from intui.kit.command_palette import CommandPalette
+
+        self.push_screen(CommandPalette(registry))
+
+    def bind_key(self, key: str, callback: Callable[[], None], *, description: str = "") -> None:
+        """Register an app-global key bound to a callback.
+
+        Used by components (e.g. the command bar) that need keys to work
+        regardless of which widget has focus, without the foundation knowing
+        about the component. The binding is dispatched through a generic app
+        action so the callback runs in the app's namespace.
+        """
+        token = f"k{len(self._key_callbacks)}"
+        self._key_callbacks[token] = callback
+        self.bind(key, f"dispatch_key('{token}')", description=description)
+
+    def action_dispatch_key(self, token: str) -> None:
+        callback = self._key_callbacks.get(token)
+        if callback is not None:
+            callback()
 
     async def _ingest(self, source: EventSource) -> None:
         """Drive the source to completion without blocking rendering.
@@ -148,6 +177,13 @@ class IntuiApp(App[None]):
 
         self.push_screen(ConfirmScreen(intent), on_result)
 
+    async def handle_intent(self, intent: Intent) -> None:
+        """Override to react to delivered intents. Default: no-op.
+
+        Either pass ``on_intent=`` to the constructor or override this method;
+        the constructor handler takes precedence.
+        """
+
     def _deliver_intent(self, intent: Intent) -> None:
-        if self._on_intent is not None:
-            self.run_worker(self._on_intent(intent), exclusive=False)
+        handler = self._on_intent if self._on_intent is not None else self.handle_intent
+        self.run_worker(handler(intent), exclusive=False)

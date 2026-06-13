@@ -9,15 +9,25 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from intui.kit.chip import TaskCounterChip
+    from intui.kit.command_bar import CommandBar
+    from intui.kit.command_palette import CommandPalette
     from intui.kit.lanes import LanesPanel
     from intui.kit.tree import TaskTree
 
-__all__ = ["LanesPanel", "TaskCounterChip", "TaskTree"]
+__all__ = [
+    "CommandBar",
+    "CommandPalette",
+    "LanesPanel",
+    "TaskCounterChip",
+    "TaskTree",
+]
 
 _LAZY = {
     "TaskCounterChip": ("intui.kit.chip", "TaskCounterChip"),
     "TaskTree": ("intui.kit.tree", "TaskTree"),
     "LanesPanel": ("intui.kit.lanes", "LanesPanel"),
+    "CommandBar": ("intui.kit.command_bar", "CommandBar"),
+    "CommandPalette": ("intui.kit.command_palette", "CommandPalette"),
 }
 
 

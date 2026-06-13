@@ -1,5 +1,14 @@
 """intui.kit.state: engine-free task/lane state model (layer 2 core)."""
 
+from intui.kit.state.commands import (
+    Command,
+    CommandEntry,
+    CommandRegistry,
+    CommandView,
+    command_view,
+    filter_commands,
+    match_score,
+)
 from intui.kit.state.model import (
     CORE_STATUSES,
     STATUS_PRESENTATION,
@@ -31,6 +40,10 @@ __all__ = [
     "STATUS_PRESENTATION",
     "UNASSIGNED_KEY",
     "ChipRow",
+    "Command",
+    "CommandEntry",
+    "CommandRegistry",
+    "CommandView",
     "ChipView",
     "ItemRow",
     "LaneRow",
@@ -42,8 +55,11 @@ __all__ = [
     "TreeView",
     "WorkItemView",
     "chip_view",
+    "command_view",
+    "filter_commands",
     "lane_status_view",
     "lanes_view",
+    "match_score",
     "status_presentation",
     "taskboard_from",
     "taskboard_slice",
