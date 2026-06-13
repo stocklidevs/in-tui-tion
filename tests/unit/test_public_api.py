@@ -48,8 +48,21 @@ CONTRACT: dict[str, set[str]] = {
         "tree_view",
         "lanes_view",
         "STATUS_PRESENTATION",
+        "Command",
+        "CommandRegistry",
+        "CommandEntry",
+        "CommandView",
+        "command_view",
+        "match_score",
+        "filter_commands",
     },
-    "intui.kit": {"TaskCounterChip", "TaskTree", "LanesPanel"},
+    "intui.kit": {
+        "TaskCounterChip",
+        "TaskTree",
+        "LanesPanel",
+        "CommandBar",
+        "CommandPalette",
+    },
 }
 
 # The root package re-exports only the foundation's engine-free core; the

@@ -120,6 +120,16 @@ class IntuiApp(App[None]):
         self.theme = theme.name
         self.refresh_css()
 
+    def open_command_palette(self, registry: Any) -> None:
+        """Open the command palette for a CommandRegistry.
+
+        Imported lazily so the foundation never depends on the kit at import
+        time (Principle II — dependencies point downward).
+        """
+        from intui.kit.command_palette import CommandPalette
+
+        self.push_screen(CommandPalette(registry))
+
     def bind_key(self, key: str, callback: Callable[[], None], *, description: str = "") -> None:
         """Register an app-global key bound to a callback.
 

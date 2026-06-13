@@ -10,7 +10,8 @@ snapshot.
 
 from __future__ import annotations
 
-from typing import Any
+from functools import partial
+from typing import TYPE_CHECKING, Any, cast
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal
@@ -18,6 +19,9 @@ from textual.widgets import Static
 
 from intui.kit.state.commands import CommandRegistry, CommandView, command_view
 from intui.widgets.bound import BoundContainer
+
+if TYPE_CHECKING:
+    from intui.app import IntuiApp
 
 
 class CommandBar(BoundContainer):
@@ -37,11 +41,12 @@ class CommandBar(BoundContainer):
         super().on_mount()  # bridge registration (BoundContainer)
         # Command keys are app-global: register them through the app so they
         # fire regardless of which widget has focus.
+        app = cast("IntuiApp", self.app)
         for command in self._registry.commands:
             if command.key:
-                self.app.bind_key(
+                app.bind_key(
                     command.key,
-                    lambda cid=command.id: self._invoke(cid),
+                    partial(self._invoke, command.id),
                     description=command.label,
                 )
 
@@ -69,10 +74,11 @@ class CommandBar(BoundContainer):
     # --- Invocation ----------------------------------------------------------
 
     def _invoke(self, command_id: str) -> None:
+        app = cast("IntuiApp", self.app)
         # Re-check availability against the *current* snapshot (FR-014).
-        if not self._registry.is_available(command_id, self.app.store.snapshot):
+        if not self._registry.is_available(command_id, app.store.snapshot):
             return
-        self.app.post_intent(self._registry.get(command_id).intent)
+        app.post_intent(self._registry.get(command_id).intent)
 
     def on_click(self, event: Any) -> None:
         node = getattr(event, "widget", None)

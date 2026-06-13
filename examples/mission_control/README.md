@@ -25,13 +25,23 @@ uv run python -m examples.mission_control
   (swoosh while active, steady once finished), its current activity, and last
   result. The two workers update independently as their events interleave.
 
+- **Bottom — command menu**: the primary actions (`a` Approve, `d` Diff,
+  `e` Evidence, `x` Cancel — risky, confirms first, `p` More). Press a key to
+  invoke; each delivers an intent (shown as a toast in this demo).
+- **Command palette**: `ctrl+p` (or the `p`/"More" command) opens a searchable
+  overlay — type to filter, arrows to select, `enter` to run, `escape` to
+  close.
+
 ## Keys
 
 | Key | Action |
 |-----|--------|
 | `enter` / `space` | Expand/collapse the focused chip or tree node |
-| arrows | Navigate the task tree |
+| arrows | Navigate the task tree (and the palette list) |
 | `tab` | Move focus between components |
+| `a` `d` `e` | Command menu: approve / diff / evidence |
+| `x` | Command menu: cancel run (risky — asks to confirm) |
+| `ctrl+p` / `p` | Open the command palette |
 | `q` | Quit |
 
 ## Why this example exists

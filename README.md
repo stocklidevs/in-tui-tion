@@ -26,9 +26,10 @@ app adapter -> event stream -> reducer/state store -> view models
    render-coalescing bridge, the Signal motion primitive, app shell with
    confirmation flow.
 3. **Component kit** (`intui.kit`) — high-level, data-driven components: a
-   task counter chip, a two-level task tree, and parallel lanes, over a
-   shared engine-free task/lane state model (`intui.kit.state`) with a
-   ready-made reduction of the standard event vocabulary.
+   task counter chip, a two-level task tree, parallel lanes, and command
+   surfaces (an always-visible command menu + a searchable command palette),
+   over a shared engine-free state model (`intui.kit.state`) with ready-made
+   reductions and a command registry.
 4. **Examples** (`examples/`) — first-class runnable demos of every feature.
 
 ## Quickstart

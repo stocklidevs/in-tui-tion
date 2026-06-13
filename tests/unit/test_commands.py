@@ -13,8 +13,7 @@ from intui.kit.state import (
     filter_commands,
     match_score,
 )
-from intui.state import Snapshot, Store, compose_reducers
-
+from intui.state import Store, compose_reducers
 
 # --- Registry & availability -------------------------------------------------
 

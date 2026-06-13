@@ -17,7 +17,7 @@ from textual.widgets import Footer, Header, Label
 from intui.actions import Intent
 from intui.app import IntuiApp
 from intui.events import JsonlReplaySource
-from intui.kit import CommandBar, TaskCounterChip, TaskTree, LanesPanel
+from intui.kit import CommandBar, LanesPanel, TaskCounterChip, TaskTree
 from intui.kit.state import (
     Command,
     CommandRegistry,
@@ -45,7 +45,10 @@ def command_registry() -> CommandRegistry:
 
 class MissionControlApp(IntuiApp):
     TITLE = "in-TUI-tion · mission_control"
-    BINDINGS = [("q", "quit", "Quit")]
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+        ("ctrl+p", "palette", "Commands"),
+    ]
     CSS = """
     TaskCounterChip { dock: top; padding: 0 1; background: $panel; }
     #columns { height: 1fr; }
@@ -68,9 +71,15 @@ class MissionControlApp(IntuiApp):
         yield CommandBar(command_registry())
         yield Footer()
 
+    def action_palette(self) -> None:
+        self.open_command_palette(command_registry())
+
     async def handle_intent(self, intent: Intent) -> None:
-        # The example has no real backend; surface the intent as a toast so
-        # invocation (and risky confirmation) is visible.
+        # The "More" command opens the palette; everything else is surfaced as
+        # a toast so invocation (and risky confirmation) is visible.
+        if intent.name == "open_palette":
+            self.open_command_palette(command_registry())
+            return
         self.notify(f"intent: {intent.name}", timeout=2.0)
 
 

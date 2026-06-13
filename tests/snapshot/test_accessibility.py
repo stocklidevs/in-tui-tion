@@ -60,6 +60,65 @@ def test_kit_status_presentation_color_free_identity() -> None:
         assert style.glyph and style.label
 
 
+async def test_command_surfaces_keyboard_only_and_risky_confirm() -> None:
+    # SC-002/SC-003: commands invocable by keyboard from both surfaces; risky
+    # commands confirm before delivery from each.
+    from textual.app import ComposeResult
+    from textual.widgets import Static
+
+    from intui.actions import Intent
+    from intui.app import ConfirmScreen, IntuiApp
+    from intui.kit import CommandBar
+    from intui.kit.state import Command, CommandRegistry
+    from intui.state import Store, compose_reducers
+
+    def reg() -> CommandRegistry:
+        return CommandRegistry(
+            [
+                Command("go", "Go", Intent("go"), key="g"),
+                Command("wipe", "Wipe", Intent("wipe", risky=True), key="w"),
+            ]
+        )
+
+    class CmdApp(IntuiApp):
+        def __init__(self, **kwargs: object) -> None:
+            super().__init__(**kwargs)  # type: ignore[arg-type]
+            self.received: list[str] = []
+            self.reg = reg()
+            self.bar = CommandBar(self.reg)
+
+        def compose(self) -> ComposeResult:
+            yield Static("body")
+            yield self.bar
+
+        async def handle_intent(self, intent: Intent) -> None:
+            self.received.append(intent.name)
+
+    store = Store(compose_reducers(n=(lambda s, e: s, 0)))
+    app = CmdApp(store=store)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        # Menu key, non-risky.
+        await pilot.press("g")
+        await pilot.pause()
+        assert app.received == ["go"]
+        # Menu key, risky -> confirm required.
+        await pilot.press("w")
+        await pilot.pause()
+        assert isinstance(app.screen, ConfirmScreen)
+        await pilot.press("y")
+        await pilot.pause()
+        assert app.received == ["go", "wipe"]
+        # Palette path, keyboard-only.
+        app.open_command_palette(app.reg)
+        await pilot.pause()
+        await pilot.press("g", "o")
+        await pilot.pause()
+        await pilot.press("enter")
+        await pilot.pause()
+        assert app.received == ["go", "wipe", "go"]
+
+
 async def test_kit_chip_keyboard_operable() -> None:
     # SC-004: the chip expands/collapses by keyboard alone.
     from textual.app import ComposeResult

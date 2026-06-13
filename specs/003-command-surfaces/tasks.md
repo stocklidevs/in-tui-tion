@@ -34,18 +34,18 @@
 
 ## Phase 4: User Story 2 — Command palette (P2)
 
-- [ ] T010 [US2] Pilot tests (write first) in `tests/snapshot/test_command_palette.py`: opens listing all commands, typing filters+ranks, keyboard select+confirm invokes (intent delivered), escape dismisses without invoking, disabled command not invocable, risky confirm applies, empty-state on no match
-- [ ] T011 [US2] Implement `CommandPalette` modal in `src/intui/kit/command_palette.py` (query input + result list over the same registry; fire-time availability re-check; invoke via `post_intent`) and `IntuiApp.open_command_palette` in `src/intui/app.py`
-- [ ] T012 [US2] Wire a palette opener into `examples/mission_control/app.py` (key + the bar's overflow "more") sharing the US1 registry
+- [X] T010 [US2] Pilot tests (write first) in `tests/snapshot/test_command_palette.py`: opens listing all commands, typing filters+ranks, keyboard select+confirm invokes (intent delivered), escape dismisses without invoking, disabled command not invocable, risky confirm applies, empty-state on no match
+- [X] T011 [US2] Implement `CommandPalette` modal in `src/intui/kit/command_palette.py` (query input + result list over the same registry; fire-time availability re-check; invoke via `post_intent`) and `IntuiApp.open_command_palette` in `src/intui/app.py`
+- [X] T012 [US2] Wire a palette opener into `examples/mission_control/app.py` (key + the bar's overflow "more") sharing the US1 registry
 
 **Checkpoint**: both surfaces drive the one registry identically.
 
 ## Phase 5: Polish & Cross-Cutting
 
-- [ ] T013 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the commands-api.md names (`intui.kit.state` + `intui.kit`)
-- [ ] T014 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: command surfaces keyboard-only (SC-002), disabled/selected states non-color (SC-006), risky confirm from both surfaces (SC-003)
-- [ ] T015 [P] Update `examples/mission_control/README.md` (command menu + palette keys) and the root README kit list
-- [ ] T016 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
+- [X] T013 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the commands-api.md names (`intui.kit.state` + `intui.kit`)
+- [X] T014 [P] Accessibility additions in `tests/snapshot/test_accessibility.py`: command surfaces keyboard-only (SC-002), disabled/selected states non-color (SC-006), risky confirm from both surfaces (SC-003)
+- [X] T015 [P] Update `examples/mission_control/README.md` (command menu + palette keys) and the root README kit list
+- [X] T016 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check
 
 ## Dependencies & Execution Order
 
