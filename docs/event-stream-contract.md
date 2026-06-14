@@ -57,6 +57,13 @@ Mirrors `intui.kit.state.KNOWN_EVENT_TYPES`.
 | `file_written` | `path` (required), `change_type?` (`added`/`modified`) | a file was created/edited; appears in the file tree (dirs inferred from the path) |
 | `file_removed` | `path` | a file was deleted; removed from the tree (empty dirs prune) |
 
+### Process metrics (→ metrics panel)
+| `type` | payload | meaning |
+|--------|---------|---------|
+| `process_started` | `label` (sanitized command name) | a monitored process began |
+| `metric_sample` | `cpu_percent`, `rss_bytes`, `elapsed_ms` | one resource sample |
+| `process_exited` | `exit_code`, `duration_ms` (envelope `status` passed/failed) | the process ended |
+
 ### Artifacts (→ diff viewer / evidence panel)
 | `type` | payload | meaning |
 |--------|---------|---------|

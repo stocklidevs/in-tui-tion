@@ -48,6 +48,12 @@ def _build_parser() -> argparse.ArgumentParser:
         help="normalize a producer's stream (default: none = canonical vocabulary)",
     )
     parser.add_argument(
+        "--metrics",
+        action="store_true",
+        help="watch a command's resources (CPU/memory) instead of its stdout "
+        "(use with `-- <command>`; needs in-tui-tion[metrics])",
+    )
+    parser.add_argument(
         "target",
         nargs="?",
         help="a .jsonl stream file (or use `-- <command>` to spawn a producer)",
@@ -89,12 +95,17 @@ def main(argv: list[str] | None = None) -> int:
             return _fail("no command given after `--`")
         if shutil.which(cmd[0]) is None and not Path(cmd[0]).is_file():
             return _fail(f"command not found: {cmd[0]}")
-        source = (
-            IntentForgeSource.from_command(cmd)
-            if intentforge
-            else SubprocessSource(cmd, event_record_types=DEFAULT_RECORD_TYPES)
-        )
+        if ns.metrics:
+            from intui.events import ProcessMonitorSource
+
+            source = ProcessMonitorSource(cmd)
+        elif intentforge:
+            source = IntentForgeSource.from_command(cmd)
+        else:
+            source = SubprocessSource(cmd, event_record_types=DEFAULT_RECORD_TYPES)
     else:
+        if ns.metrics:
+            return _fail("--metrics needs a command: intui watch --metrics -- <command>")
         if ns.target is None:
             return _fail("no stream file or `-- <command>` given")
         path = Path(ns.target)

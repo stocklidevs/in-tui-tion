@@ -115,3 +115,19 @@ def test_default_adapter_none_uses_ndjson_source(
     rc = cli.main(["watch", str(_stream_file(tmp_path))])
     assert rc == 0
     assert isinstance(_no_terminal[0]["source"], NdjsonStreamSource)
+
+
+def test_metrics_flag_uses_process_monitor_source(_no_terminal: list[dict[str, Any]]) -> None:
+    import sys
+
+    from intui.events import ProcessMonitorSource
+
+    rc = cli.main(["watch", "--metrics", "--", sys.executable, "-c", "pass"])
+    assert rc == 0
+    assert isinstance(_no_terminal[0]["source"], ProcessMonitorSource)
+
+
+def test_metrics_without_command_is_error(capsys: pytest.CaptureFixture[str]) -> None:
+    rc = cli.main(["watch", "--metrics", "run.jsonl"])
+    assert rc != 0
+    assert "metrics" in capsys.readouterr().err.lower()

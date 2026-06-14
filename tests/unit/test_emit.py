@@ -181,6 +181,21 @@ def test_evidence_emits_metrics() -> None:
     assert {"pass_rate", "certified"} <= keys
 
 
+def test_metric_sample_helper() -> None:
+    from intui.events import parse_event
+    from intui.kit.state import metrics_slice
+
+    events, sink = _capture()
+    rec = run_recorder(sink, run_id="r1")
+    rec.metric_sample(cpu_percent=42.0, rss_bytes=53_400_000, elapsed_ms=1200)
+    assert events[0]["type"] == "metric_sample"
+    store = Store(compose_reducers(metrics=metrics_slice()))
+    for env in events:
+        store.ingest(parse_event(env))
+    m = store.snapshot.slice("metrics")
+    assert m.cpu_percent == 42.0 and m.rss_bytes == 53_400_000
+
+
 def test_file_helpers_build_the_tree() -> None:
     from intui.events import parse_event
     from intui.kit.state import file_tree_view, workspace_slice

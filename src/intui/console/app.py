@@ -28,6 +28,7 @@ from intui.kit import (
     EvidencePanel,
     FileTree,
     LanesPanel,
+    MetricsPanel,
     TaskCounterChip,
     TaskTree,
     ViewRouter,
@@ -43,6 +44,8 @@ from intui.kit.state import (
     evidence_view,
     file_tree_view,
     lanes_view,
+    metrics_slice,
+    metrics_view,
     run_status_slice,
     select_view_intent,
     taskboard_slice,
@@ -54,7 +57,7 @@ from intui.kit.state import (
 from intui.state import Snapshot, Store, compose_reducers
 from intui.viewmodels import selector
 
-VIEWS = ("tasks", "lanes", "files", "diff", "evidence")
+VIEWS = ("tasks", "lanes", "files", "diff", "evidence", "metrics")
 
 
 @selector
@@ -70,6 +73,7 @@ def _command_registry() -> CommandRegistry:
             Command("view_files", "Files", select_view_intent("files"), key="f"),
             Command("view_diff", "Diff", select_view_intent("diff"), key="d"),
             Command("view_evidence", "Evidence", select_view_intent("evidence"), key="e"),
+            Command("view_metrics", "Metrics", select_view_intent("metrics"), key="m"),
             Command("palette", "More", Intent("open_palette"), key="p"),
         ]
     )
@@ -123,6 +127,7 @@ class ConsoleApp(IntuiApp):
                     "files": FileTree(file_tree_view(public_safe=self._public_safe)),
                     "diff": DiffViewer(diff_view(public_safe=self._public_safe)),
                     "evidence": EvidencePanel(evidence_view(public_safe=self._public_safe)),
+                    "metrics": MetricsPanel(metrics_view(public_safe=self._public_safe)),
                 },
             )
         yield CommandBar(_command_registry())
@@ -202,6 +207,7 @@ def build_console(
             taskboard=taskboard_slice(),
             artifacts=artifacts_slice(),
             workspace=workspace_slice(),
+            metrics=metrics_slice(),
             run_status=run_status_slice(),
         )
     )
