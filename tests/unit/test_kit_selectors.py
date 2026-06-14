@@ -129,6 +129,62 @@ def test_tree_rows_carry_status_identity() -> None:
     assert row.glyph and row.label == "blocked"
 
 
+def test_tree_synthesizes_parent_for_items_without_task_event() -> None:
+    # Work items carry a parent id (task_id) but no task event was emitted.
+    store = make_store()
+    store.ingest(
+        make_event(
+            "e1", "work_item_started", task_id="suite-x", work_item_id="w1", summary="scaffold"
+        )
+    )
+    store.ingest(
+        make_event(
+            "e2",
+            "work_item_completed",
+            task_id="suite-x",
+            work_item_id="w2",
+            status="passed",
+            summary="api",
+        )
+    )
+    vm = tree_view()(store.snapshot)
+    parents = [t for t in vm.tasks if t.title == "suite-x"]
+    assert len(parents) == 1
+    assert [i.title for i in parents[0].items] == ["scaffold", "api"]
+    assert parents[0].key != UNASSIGNED_KEY
+
+
+def test_tree_synthesized_parent_status_rolls_up() -> None:
+    store = make_store()
+    store.ingest(
+        make_event("e1", "work_item_completed", task_id="s", work_item_id="w1", status="passed")
+    )
+    store.ingest(make_event("e2", "work_item_started", task_id="s", work_item_id="w2"))  # active
+    row = next(t for t in tree_view()(store.snapshot).tasks if t.title == "s")
+    assert row.status == "active"  # active outranks completed in the roll-up
+
+
+def test_tree_real_task_takes_precedence_over_synthesized() -> None:
+    store = make_store()
+    store.ingest(
+        make_event("e1", "work_item_started", task_id="t1", work_item_id="w1", summary="item")
+    )
+    store.ingest(make_event("e2", "task_started", task_id="t1", summary="Real Task"))
+    vm = tree_view()(store.snapshot)
+    assert [t.title for t in vm.tasks] == ["Real Task"]  # no separate synthesized node
+    assert [i.title for i in vm.tasks[0].items] == ["item"]
+
+
+def test_tree_parented_and_unparented_coexist() -> None:
+    store = make_store()
+    store.ingest(
+        make_event("e1", "work_item_started", task_id="s", work_item_id="w1", summary="child")
+    )
+    store.ingest(make_event("e2", "work_item_started", work_item_id="w2", summary="orphan"))
+    titles = {t.title for t in tree_view()(store.snapshot).tasks}
+    assert "s" in titles and "unassigned" in titles
+
+
 # --- lanes_view --------------------------------------------------------------
 
 

@@ -91,6 +91,7 @@ def _reduce_item(state: TaskBoardState, event: Event) -> TaskBoardState:
     if not item_id:
         return state
     key = _key(event, item_id)
+    parent_id = event.scope.task_id or UNASSIGNED_KEY
     parent_key = _key(event, event.scope.task_id) if event.scope.task_id else UNASSIGNED_KEY
     status = "active" if event.type == "work_item_started" else _completion_status(event)
     existing = state.work_items.get(key)
@@ -101,6 +102,7 @@ def _reduce_item(state: TaskBoardState, event: Event) -> TaskBoardState:
         title=_title(event, fallback=item_id) if existing is None else existing.title,
         status=status,
         last_summary=event.summary or (existing.last_summary if existing else None),
+        parent_id=existing.parent_id if existing is not None else parent_id,
     )
     work_items: Mapping[str, WorkItemView] = {**state.work_items, key: item}
     tasks = _with_item_counts(state.tasks, work_items, item.parent_key)

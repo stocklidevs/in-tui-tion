@@ -45,3 +45,15 @@ def test_safe_text_left_intact() -> None:
 def test_relative_path_not_redacted() -> None:
     text = "edited src/app.py and README.md"
     assert redact(text) == text
+
+
+def test_deep_relative_path_not_redacted() -> None:
+    # Relative repo paths of any depth survive — they are not sensitive and are
+    # exactly what a diff/file view must show distinctly (feature 011).
+    for path in ("src/integration_workbench/api.py", "tests/fixtures/records.csv"):
+        assert redact(path) == path
+
+
+def test_absolute_posix_path_still_redacted_at_start() -> None:
+    out = redact("/home/alice/.ssh/id_rsa")
+    assert "/home/alice/.ssh/id_rsa" not in out and MARKER in out

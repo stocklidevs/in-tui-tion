@@ -78,6 +78,65 @@ def test_diff_ready_reduced_into_store() -> None:
     assert len(art.diff.files) == 2
 
 
+def file_diff_event(eid: str, path: str, *, new: str = "x", reset: bool = False) -> Event:
+    unified = f"--- a/{path}\n+++ b/{path}\n@@ -1 +1 @@\n-old\n+{new}\n"
+    payload: dict[str, object] = {"title": path, "unified": unified}
+    if reset:
+        payload["reset"] = True
+    return Event(
+        version="1",
+        event_id=eid,
+        run_id="r1",
+        timestamp=datetime(2026, 6, 13, tzinfo=UTC),
+        type="diff_ready",
+        scope=Scope(),
+        payload=payload,
+    )
+
+
+def test_diff_ready_accumulates_files_by_path() -> None:
+    store = make_store()
+    store.ingest(file_diff_event("d1", "src/a.py"))
+    store.ingest(file_diff_event("d2", "src/b.py"))
+    store.ingest(file_diff_event("d3", "src/c.py"))
+    files = diff_view()(store.snapshot).files
+    assert [f.path for f in files] == ["src/a.py", "src/b.py", "src/c.py"]
+
+
+def test_diff_ready_same_path_replaces_in_place() -> None:
+    store = make_store()
+    store.ingest(file_diff_event("d1", "src/a.py", new="first"))
+    store.ingest(file_diff_event("d2", "src/b.py"))
+    store.ingest(file_diff_event("d3", "src/a.py", new="second"))
+    view = diff_view()(store.snapshot)
+    assert [f.path for f in view.files] == ["src/a.py", "src/b.py"]  # no duplicate
+    body_text = "".join(line.text for line in view.body("src/a.py"))
+    assert "second" in body_text and "first" not in body_text
+
+
+def test_diff_ready_reset_clears_accumulation() -> None:
+    store = make_store()
+    store.ingest(file_diff_event("d1", "src/a.py"))
+    store.ingest(file_diff_event("d2", "src/b.py"))
+    store.ingest(file_diff_event("d3", "src/c.py", reset=True))
+    files = diff_view()(store.snapshot).files
+    assert [f.path for f in files] == ["src/c.py"]
+
+
+def test_diff_ready_multifile_single_event_still_lists_all() -> None:
+    store = make_store()
+    store.ingest(diff_event())  # one event, multi-file UNIFIED blob (2 files)
+    assert len(diff_view()(store.snapshot).files) == 2
+
+
+def test_accumulated_diffs_stay_public_safe_by_default() -> None:
+    store = make_store()
+    store.ingest(file_diff_event("d1", "src/a.py"))
+    store.ingest(diff_event())  # carries an unsafe path in the second file
+    view = diff_view()(store.snapshot)
+    assert all("C:\\Users\\me" not in f.path for f in view.files)
+
+
 def test_evidence_ready_reduced_into_store() -> None:
     store = make_store()
     store.ingest(evidence_event())

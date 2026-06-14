@@ -112,12 +112,26 @@ class TreeView:
     tasks: tuple[TaskRow, ...] = ()
 
 
+#: Roll-up precedence for a synthesized parent's status (first present wins).
+_ROLLUP_ORDER = ("failed", "blocked", "active", "pending")
+
+
+def _rollup_status(statuses: set[str]) -> str:
+    for status in _ROLLUP_ORDER:
+        if status in statuses:
+            return status
+    return "completed"
+
+
 def tree_view(slice_name: str = "taskboard") -> Selector[TreeView]:
     def project(snapshot: Snapshot) -> TreeView:
         board = _board(snapshot, slice_name)
         items_by_parent: dict[str, list[ItemRow]] = {}
+        # For parent keys lacking an explicit TaskView: a title + rolled-up status.
+        synth_title: dict[str, str] = {}
+        synth_statuses: dict[str, set[str]] = {}
         for item in board.work_items.values():
-            parent = item.parent_key if item.parent_key in board.tasks else UNASSIGNED_KEY
+            parent = item.parent_key
             style = status_presentation(item.status)
             items_by_parent.setdefault(parent, []).append(
                 ItemRow(
@@ -128,7 +142,11 @@ def tree_view(slice_name: str = "taskboard") -> Selector[TreeView]:
                     label=style.label,
                 )
             )
+            if parent not in board.tasks:
+                synth_title.setdefault(parent, item.parent_id)
+                synth_statuses.setdefault(parent, set()).add(item.status)
         rows = []
+        # 1) Real tasks — their items nest under them.
         for task in sorted(board.tasks.values(), key=lambda t: t.order):
             style = status_presentation(task.status)
             rows.append(
@@ -141,8 +159,26 @@ def tree_view(slice_name: str = "taskboard") -> Selector[TreeView]:
                     items=tuple(items_by_parent.pop(task.key, ())),
                 )
             )
-        orphans = [row for rows_ in items_by_parent.values() for row in rows_]
-        if orphans:
+        # 2) Synthesized parents for items whose parent has no task event.
+        unassigned: list[ItemRow] = []
+        for parent, item_rows in items_by_parent.items():
+            if parent == UNASSIGNED_KEY:
+                unassigned.extend(item_rows)
+                continue
+            status = _rollup_status(synth_statuses.get(parent, set()))
+            style = status_presentation(status)
+            rows.append(
+                TaskRow(
+                    key=parent,
+                    title=synth_title.get(parent, parent),
+                    status=status,
+                    glyph=style.glyph,
+                    label=style.label,
+                    items=tuple(item_rows),
+                )
+            )
+        # 3) Truly parentless items.
+        if unassigned:
             style = status_presentation("pending")
             rows.append(
                 TaskRow(
@@ -151,7 +187,7 @@ def tree_view(slice_name: str = "taskboard") -> Selector[TreeView]:
                     status="pending",
                     glyph=style.glyph,
                     label=style.label,
-                    items=tuple(orphans),
+                    items=tuple(unassigned),
                 )
             )
         return TreeView(tasks=tuple(rows))
