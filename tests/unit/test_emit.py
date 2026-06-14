@@ -179,3 +179,20 @@ def test_evidence_emits_metrics() -> None:
     rows = evidence_view()(_store_artifacts(events).snapshot).rows
     keys = {r.key for r in rows}
     assert {"pass_rate", "certified"} <= keys
+
+
+def test_file_helpers_build_the_tree() -> None:
+    from intui.events import parse_event
+    from intui.kit.state import file_tree_view, workspace_slice
+
+    events, sink = _capture()
+    rec = run_recorder(sink, run_id="r1")
+    rec.file_written("src/app.py", change_type="added")
+    rec.file_written("README.md")
+    rec.file_removed("src/old.py")
+    assert events[0]["type"] == "file_written" and events[0]["payload"]["path"] == "src/app.py"
+    store = Store(compose_reducers(workspace=workspace_slice()))
+    for env in events:
+        store.ingest(parse_event(env))
+    roots = file_tree_view()(store.snapshot).roots
+    assert {n.name for n in roots} == {"src", "README.md"}

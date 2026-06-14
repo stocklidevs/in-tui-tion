@@ -45,11 +45,51 @@ async def test_views_are_keyboard_navigable() -> None:
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        for key, view in [("l", "lanes"), ("d", "diff"), ("e", "evidence"), ("t", "tasks")]:
+        for key, view in [
+            ("l", "lanes"),
+            ("f", "files"),
+            ("d", "diff"),
+            ("e", "evidence"),
+            ("t", "tasks"),
+        ]:
             await pilot.press(key)
             await pilot.pause(0.05)
             assert app.query_one(ViewRouter).current_view() == view
         assert app.is_running
+
+
+async def test_files_view_shows_workspace_tree() -> None:
+    from intui.events import MemorySource
+    from intui.kit import FileTree
+
+    lines = [
+        {
+            "version": "1",
+            "event_id": "f1",
+            "run_id": "r",
+            "timestamp": "2026-06-14T10:00:00Z",
+            "type": "file_written",
+            "scope": {},
+            "payload": {"path": "src/app.py", "change_type": "added"},
+        },
+        {
+            "version": "1",
+            "event_id": "f2",
+            "run_id": "r",
+            "timestamp": "2026-06-14T10:00:01Z",
+            "type": "file_written",
+            "scope": {},
+            "payload": {"path": "README.md"},
+        },
+    ]
+    app = build_console(MemorySource(lines))
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        await pilot.press("f")
+        await pilot.pause(0.05)
+        assert app.query_one(ViewRouter).current_view() == "files"
+        paths = app.query_one(FileTree).paths()
+        assert "src/app.py" in paths and "README.md" in paths
 
 
 async def test_public_safe_default_redacts_and_opt_out_reveals() -> None:

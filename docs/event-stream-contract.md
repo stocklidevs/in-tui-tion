@@ -51,6 +51,12 @@ Mirrors `intui.kit.state.KNOWN_EVENT_TYPES`.
 | `subagent_activity` | `lane_id` | lane activity (`summary` = current activity) |
 | `subagent_completed` | `lane_id` | lane terminal (`status`) |
 
+### Workspace files (→ file tree)
+| `type` | payload | meaning |
+|--------|---------|---------|
+| `file_written` | `path` (required), `change_type?` (`added`/`modified`) | a file was created/edited; appears in the file tree (dirs inferred from the path) |
+| `file_removed` | `path` | a file was deleted; removed from the tree (empty dirs prune) |
+
 ### Artifacts (→ diff viewer / evidence panel)
 | `type` | payload | meaning |
 |--------|---------|---------|

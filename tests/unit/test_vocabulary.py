@@ -11,6 +11,7 @@ from intui.kit.state import (
     RUN_STATUS_EVENT_TYPES,
     TASKBOARD_EVENT_TYPES,
     VIEW_EVENT_TYPES,
+    WORKSPACE_EVENT_TYPES,
     artifacts_slice,
     conversation_slice,
     mode_slice,
@@ -26,6 +27,7 @@ _MODULE_SETS = [
     MODE_EVENT_TYPES,
     VIEW_EVENT_TYPES,
     RUN_STATUS_EVENT_TYPES,
+    WORKSPACE_EVENT_TYPES,
 ]
 
 

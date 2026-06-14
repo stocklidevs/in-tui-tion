@@ -238,6 +238,14 @@ class RunRecorder:
         ]
         return self.emit("evidence_ready", title=title, metrics=rows, public_safe=public_safe)
 
+    # --- workspace files -----------------------------------------------------
+
+    def file_written(self, path: str, *, change_type: str = "modified") -> Event:
+        return self.emit("file_written", path=path, change_type=change_type)
+
+    def file_removed(self, path: str) -> Event:
+        return self.emit("file_removed", path=path)
+
     # --- views / modes / activity / run lifecycle ----------------------------
 
     def view(self, view: str) -> Event:

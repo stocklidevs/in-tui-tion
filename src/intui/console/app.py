@@ -26,6 +26,7 @@ from intui.kit import (
     ConversationLog,
     DiffViewer,
     EvidencePanel,
+    FileTree,
     LanesPanel,
     TaskCounterChip,
     TaskTree,
@@ -40,6 +41,7 @@ from intui.kit.state import (
     conversation_view,
     diff_view,
     evidence_view,
+    file_tree_view,
     lanes_view,
     run_status_slice,
     select_view_intent,
@@ -47,11 +49,12 @@ from intui.kit.state import (
     tree_view,
     view_router_view,
     view_slice,
+    workspace_slice,
 )
 from intui.state import Snapshot, Store, compose_reducers
 from intui.viewmodels import selector
 
-VIEWS = ("tasks", "lanes", "diff", "evidence")
+VIEWS = ("tasks", "lanes", "files", "diff", "evidence")
 
 
 @selector
@@ -64,6 +67,7 @@ def _command_registry() -> CommandRegistry:
         [
             Command("view_tasks", "Tasks", select_view_intent("tasks"), key="t"),
             Command("view_lanes", "Lanes", select_view_intent("lanes"), key="l"),
+            Command("view_files", "Files", select_view_intent("files"), key="f"),
             Command("view_diff", "Diff", select_view_intent("diff"), key="d"),
             Command("view_evidence", "Evidence", select_view_intent("evidence"), key="e"),
             Command("palette", "More", Intent("open_palette"), key="p"),
@@ -110,6 +114,7 @@ class ConsoleApp(IntuiApp):
                         TaskTree(tree_view()),
                     ),
                     "lanes": LanesPanel(lanes_view()),
+                    "files": FileTree(file_tree_view(public_safe=self._public_safe)),
                     "diff": DiffViewer(diff_view(public_safe=self._public_safe)),
                     "evidence": EvidencePanel(evidence_view(public_safe=self._public_safe)),
                 },
@@ -160,6 +165,7 @@ def build_console(
             conversation=conversation_slice(),
             taskboard=taskboard_slice(),
             artifacts=artifacts_slice(),
+            workspace=workspace_slice(),
             run_status=run_status_slice(),
         )
     )
