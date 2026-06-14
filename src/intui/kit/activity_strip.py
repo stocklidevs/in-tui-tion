@@ -24,8 +24,11 @@ class ActivityStrip(Signal):
     ActivityStrip { height: 1; width: 1fr; }
     """
 
-    def __init__(self, selector: Selector[str], **kwargs: Any) -> None:
-        super().__init__(selector, dict(ACTIVITY_STYLES), track_width=12, **kwargs)
+    def __init__(self, selector: Selector[str], *, swoosh_glow: int = 4, **kwargs: Any) -> None:
+        # A wider glow than a small inline Signal — this is the marquee KITT bar.
+        super().__init__(
+            selector, dict(ACTIVITY_STYLES), track_width=12, swoosh_glow=swoosh_glow, **kwargs
+        )
 
     def _current_style(self) -> StatusStyle:
         # Use the activity mapping so unknown states keep their raw label

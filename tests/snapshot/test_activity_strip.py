@@ -89,6 +89,24 @@ async def test_motion_tracks_state() -> None:
         assert app.strip.current_motion() is MotionMode.STEADY
 
 
+def test_swoosh_glow_widens_the_sweep() -> None:
+    # The KITT glow radius is configurable; a wider glow lights more cells.
+    from intui.viewmodels import selector
+
+    sel = selector(lambda _snap: "thinking")
+    narrow = ActivityStrip(sel, swoosh_glow=1)
+    wide = ActivityStrip(sel, swoosh_glow=5)
+    for s in (narrow, wide):
+        s._track_width = 40
+        s._frame = 20  # mid-track so the glow is not clipped at an edge
+        s._status = "thinking"
+
+    def lit(s: ActivityStrip) -> int:
+        return sum(1 for c in s._render_track(s._current_style()) if c != "·")
+
+    assert lit(wide) > lit(narrow)
+
+
 async def test_unknown_state_neutral_fallback() -> None:
     app, store = build()
     async with app.run_test() as pilot:
