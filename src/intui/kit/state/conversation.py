@@ -21,9 +21,7 @@ _KNOWN_ROLES = {"agent", "user", "system"}
 _prompt_counter = itertools.count()
 
 #: Canonical event types the conversation reducer consumes (stream contract).
-CONVERSATION_EVENT_TYPES = frozenset(
-    {"message_added", "question_requested", "approval_requested"}
-)
+CONVERSATION_EVENT_TYPES = frozenset({"message_added", "question_requested", "approval_requested"})
 
 
 class ConversationKind(Enum):

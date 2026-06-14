@@ -50,8 +50,16 @@ def _event(type_: str) -> Event:
         timestamp=datetime(2026, 6, 13, tzinfo=UTC),
         type=type_,
         scope=Scope(task_id="t1", work_item_id="w1", lane_id="l1"),
-        payload={"mode": "Build", "view": "diff", "role": "agent", "text": "hi",
-                 "name": "x", "title": "t", "metrics": [], "unified": ""},
+        payload={
+            "mode": "Build",
+            "view": "diff",
+            "role": "agent",
+            "text": "hi",
+            "name": "x",
+            "title": "t",
+            "metrics": [],
+            "unified": "",
+        },
     )
 
 

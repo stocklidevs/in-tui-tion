@@ -22,6 +22,9 @@ CONTRACT: dict[str, set[str]] = {
         "JsonlReplaySource",
         "write_recording",
         "read_recording",
+        "validate_event",
+        "validate_stream",
+        "StreamIssue",
     },
     "intui.state": {
         "Reducer",
@@ -86,6 +89,12 @@ CONTRACT: dict[str, set[str]] = {
         "view_slice",
         "view_router_view",
         "select_view_intent",
+        "KNOWN_EVENT_TYPES",
+        "TASKBOARD_EVENT_TYPES",
+        "ARTIFACT_EVENT_TYPES",
+        "CONVERSATION_EVENT_TYPES",
+        "MODE_EVENT_TYPES",
+        "VIEW_EVENT_TYPES",
     },
     "intui.kit": {
         "TaskCounterChip",

@@ -36,15 +36,15 @@
 
 ## Phase 4: User Story 3 — Author quickstart + doc consolidation (P2)
 
-- [ ] T012 [US3] Write `docs/quickstart.md`: stream-first path (emit JSON → validate → console-to-come) and build-in-code path (compose the kit, run an example), linking the contract + public API
-- [ ] T013 [P] [US3] Update root `README.md` and the example READMEs to link `docs/event-stream-contract.md` as the single vocabulary source (stop restating it); add an install section
+- [X] T012 [US3] Write `docs/quickstart.md`: stream-first path (emit JSON → validate → console-to-come) and build-in-code path (compose the kit, run an example), linking the contract + public API
+- [X] T013 [P] [US3] Update root `README.md` and the example READMEs to link `docs/event-stream-contract.md` as the single vocabulary source (stop restating it); add an install section
 
 **Checkpoint**: a newcomer can go from install to a running example via docs only.
 
 ## Phase 5: Polish & Cross-Cutting
 
-- [ ] T014 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the new names (`validate_event`, `validate_stream`, `StreamIssue`, `KNOWN_EVENT_TYPES`)
-- [ ] T015 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check + wheel build/install
+- [X] T014 [P] Extend the contract-drift test in `tests/unit/test_public_api.py` with the new names (`validate_event`, `validate_stream`, `StreamIssue`, `KNOWN_EVENT_TYPES`)
+- [X] T015 Full gate: `uv run pytest && uv run ruff check && uv run mypy`; fix all findings; fresh-clone quickstart check + wheel build/install
 
 ## Dependencies & Execution Order
 

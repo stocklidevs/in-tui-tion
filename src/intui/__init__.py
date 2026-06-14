@@ -18,9 +18,12 @@ from intui.events import (
     Scope,
     StreamError,
     StreamHealth,
+    StreamIssue,
     StreamState,
     parse_event,
     read_recording,
+    validate_event,
+    validate_stream,
     write_recording,
 )
 from intui.state import Reducer, ReducerError, SliceReducer, Snapshot, Store, compose_reducers
@@ -58,6 +61,7 @@ __all__ = [
     "Store",
     "StreamError",
     "StreamHealth",
+    "StreamIssue",
     "StreamState",
     "Theme",
     "compose_reducers",
@@ -66,5 +70,7 @@ __all__ = [
     "read_recording",
     "resolve_status_style",
     "selector",
+    "validate_event",
+    "validate_stream",
     "write_recording",
 ]
