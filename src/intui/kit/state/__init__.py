@@ -40,6 +40,16 @@ from intui.kit.state.conversation import (
     conversation_view,
     prompt_message_event,
 )
+from intui.kit.state.metrics import (
+    METRICS_EVENT_TYPES,
+    MetricsSample,
+    MetricsState,
+    MetricsView,
+    human_bytes,
+    metrics_slice,
+    metrics_view,
+    sparkline,
+)
 from intui.kit.state.model import (
     CORE_STATUSES,
     STATUS_PRESENTATION,
@@ -114,6 +124,7 @@ KNOWN_EVENT_TYPES = frozenset(
     | VIEW_EVENT_TYPES
     | RUN_STATUS_EVENT_TYPES
     | WORKSPACE_EVENT_TYPES
+    | METRICS_EVENT_TYPES
 )
 
 __all__ = [
@@ -123,6 +134,7 @@ __all__ = [
     "CONVERSATION_EVENT_TYPES",
     "CORE_STATUSES",
     "KNOWN_EVENT_TYPES",
+    "METRICS_EVENT_TYPES",
     "MODE_EVENT_TYPES",
     "RUN_STATUS_EVENT_TYPES",
     "TASKBOARD_EVENT_TYPES",
@@ -166,6 +178,9 @@ __all__ = [
     "LaneRow",
     "LaneView",
     "LanesView",
+    "MetricsSample",
+    "MetricsState",
+    "MetricsView",
     "TaskBoardState",
     "TaskRow",
     "TaskView",
@@ -185,6 +200,10 @@ __all__ = [
     "evidence_view",
     "file_tree_view",
     "filter_commands",
+    "human_bytes",
+    "metrics_slice",
+    "metrics_view",
+    "sparkline",
     "lane_status_view",
     "lanes_view",
     "match_score",

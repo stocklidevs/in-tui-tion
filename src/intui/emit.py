@@ -246,6 +246,19 @@ class RunRecorder:
     def file_removed(self, path: str) -> Event:
         return self.emit("file_removed", path=path)
 
+    # --- process metrics -----------------------------------------------------
+
+    def metric_sample(
+        self, *, cpu_percent: float = 0.0, rss_bytes: int = 0, elapsed_ms: int = 0
+    ) -> Event:
+        """Emit a ``metric_sample`` (for tools reporting their own metrics)."""
+        return self.emit(
+            "metric_sample",
+            cpu_percent=cpu_percent,
+            rss_bytes=rss_bytes,
+            elapsed_ms=elapsed_ms,
+        )
+
     # --- views / modes / activity / run lifecycle ----------------------------
 
     def view(self, view: str) -> Event:

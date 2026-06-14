@@ -188,3 +188,50 @@ async def test_file_actions_true_deletes_on_confirm(tmp_path: Path) -> None:
         await pilot.press("y")  # confirm
         await pilot.pause(0.1)
         assert not target.exists()  # real deletion when opted in
+
+
+# --- metrics view (015) ------------------------------------------------------
+
+
+async def test_metrics_view_reachable_and_shows_panel() -> None:
+    from intui.kit import MetricsPanel
+
+    lines = [
+        {
+            "version": "1",
+            "event_id": "p1",
+            "run_id": "r",
+            "timestamp": "2026-06-14T10:00:00Z",
+            "type": "process_started",
+            "scope": {},
+            "payload": {"label": "build.py"},
+        },
+        {
+            "version": "1",
+            "event_id": "p2",
+            "run_id": "r",
+            "timestamp": "2026-06-14T10:00:01Z",
+            "type": "metric_sample",
+            "scope": {},
+            "payload": {"cpu_percent": 40.0, "rss_bytes": 53400000, "elapsed_ms": 1200},
+        },
+        {
+            "version": "1",
+            "event_id": "p3",
+            "run_id": "r",
+            "timestamp": "2026-06-14T10:00:02Z",
+            "type": "process_exited",
+            "scope": {},
+            "status": "passed",
+            "payload": {"exit_code": 0, "duration_ms": 1800},
+        },
+    ]
+    app = build_console(MemorySource(lines))
+    async with app.run_test(size=(100, 30)) as pilot:
+        await _drain(app, pilot)
+        await pilot.press("m")
+        await pilot.pause(0.05)
+        assert app.query_one(ViewRouter).current_view() == "metrics"
+        panel = app.query_one(MetricsPanel)
+        assert panel.status() == "passed"
+        assert "build.py" in panel.summary_text()

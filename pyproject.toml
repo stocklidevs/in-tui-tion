@@ -36,6 +36,9 @@ Repository = "https://github.com/stocklidevs/in-tui-tion"
 [project.scripts]
 intui = "intui.console.cli:main"
 
+[project.optional-dependencies]
+metrics = ["psutil>=5"]
+
 [tool.hatch.version]
 path = "src/intui/__init__.py"
 
@@ -47,6 +50,7 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.13",
     "jsonschema>=4",
+    "psutil>=5",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -85,6 +89,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "TID"]
 "src/intui/kit/diff_viewer.py" = ["TID251"]
 "src/intui/kit/evidence_panel.py" = ["TID251"]
 "src/intui/kit/file_tree.py" = ["TID251"]
+"src/intui/kit/metrics_panel.py" = ["TID251"]
 "src/intui/kit/mode_strip.py" = ["TID251"]
 "src/intui/kit/conversation_log.py" = ["TID251"]
 "src/intui/kit/prompt_input.py" = ["TID251"]

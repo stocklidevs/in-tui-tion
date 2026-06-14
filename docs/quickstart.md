@@ -86,6 +86,15 @@ for issue in validate_stream("run.jsonl", known_types=KNOWN_EVENT_TYPES):
     print(issue.line, issue.severity, issue.reason)
 ```
 
+### Watch a command's resources
+
+```sh
+pip install "in-tui-tion[metrics]"            # adds psutil
+intui watch --metrics -- python build.py      # press `m` for CPU/memory/status
+```
+
+See the [metrics quickstart](../specs/015-process-metrics-monitor/quickstart.md).
+
 ### Producer doesn't speak the canonical vocabulary? Use an adapter.
 
 If your tool emits its own event names, a thin adapter normalizes them. The

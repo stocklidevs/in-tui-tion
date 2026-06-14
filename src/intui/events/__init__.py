@@ -1,6 +1,7 @@
 """intui.events: versioned envelopes, append-only streams, and sources."""
 
 from intui.events.envelope import EnvelopeError, Event, Scope, parse_event
+from intui.events.process import ProcessMonitorSource
 from intui.events.recording import read_recording, write_recording
 from intui.events.sources import (
     EventSource,
@@ -20,6 +21,7 @@ __all__ = [
     "JsonlReplaySource",
     "MemorySource",
     "NdjsonStreamSource",
+    "ProcessMonitorSource",
     "SubprocessSource",
     "Scope",
     "StreamError",
