@@ -20,6 +20,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
+from intui.actions.intents import Intent
 from intui.events.envelope import Event, Scope
 from intui.kit.state.artifacts import redact
 from intui.state.snapshot import Snapshot
@@ -112,42 +113,69 @@ def file_tree_view(
 
     def project(snapshot: Snapshot) -> FileTreeView:
         state: WorkspaceState = snapshot.slice(slice_name)
-        # path (possibly redacted) -> status, built into a nested dict.
         root: dict[str, Any] = {}
         for entry in state.files.values():
-            display = redact(entry.path) if public_safe else entry.path
-            segments = [s for s in display.split("/") if s]
+            real = entry.path  # normalized, real path (used for actions)
+            display = redact(real) if public_safe else real
+            # Unsafe path: a single leaf whose display name is the redacted form
+            # but which still carries the real path (so an action targets the
+            # actual file) — we don't reveal an unsafe path's structure.
+            segments = [display] if display != real else [s for s in real.split("/") if s]
             if not segments:
                 continue
-            _insert(root, segments, entry.status)
-        return FileTreeView(roots=_build_nodes(root, prefix=""))
+            _insert(root, segments, real, entry.status)
+        return FileTreeView(roots=_build_nodes(root))
 
     return Selector(project)
 
 
-def _insert(node: dict[str, Any], segments: list[str], status: str) -> None:
-    head, *rest = segments
-    child = node.setdefault(head, {"__dir__": bool(rest), "__status__": "", "__children__": {}})
-    if rest:
-        child["__dir__"] = True
-        _insert(child["__children__"], rest, status)
-    else:
-        # a file leaf (a later file under the same name wins its status)
-        child["__status__"] = status
+def _insert(node: dict[str, Any], segments: list[str], real_path: str, status: str) -> None:
+    cur = node
+    acc = ""
+    last = len(segments) - 1
+    for i, seg in enumerate(segments):
+        acc = f"{acc}/{seg}" if acc else seg
+        child = cur.setdefault(
+            seg, {"__dir__": False, "__status__": "", "__path__": acc, "__children__": {}}
+        )
+        if i == last:
+            # the file leaf (a later write under the same name wins its status)
+            child["__status__"] = status
+            child["__path__"] = real_path
+        else:
+            child["__dir__"] = True
+            cur = child["__children__"]
 
 
-def _build_nodes(node: dict[str, Any], *, prefix: str) -> tuple[FileNode, ...]:
+def _build_nodes(node: dict[str, Any]) -> tuple[FileNode, ...]:
     nodes: list[FileNode] = []
     for name, data in node.items():
-        path = f"{prefix}/{name}" if prefix else name
         is_dir = bool(data["__dir__"])
-        children = _build_nodes(data["__children__"], prefix=path) if is_dir else ()
+        children = _build_nodes(data["__children__"]) if is_dir else ()
         status = "" if is_dir else str(data["__status__"])
         glyph = _DIR_GLYPH if is_dir else _FILE_GLYPHS.get(status, "")
-        nodes.append(FileNode(name, path, is_dir, status, glyph, children))
+        nodes.append(FileNode(name, str(data["__path__"]), is_dir, status, glyph, children))
     # dirs before files, then alphabetical by name
     nodes.sort(key=lambda n: (not n.is_dir, n.name))
     return tuple(nodes)
+
+
+# --- File-action intents (Principle III: the app fulfills; we only request) --
+
+
+def open_file_intent(path: str) -> Intent:
+    """Request opening ``path`` (the app decides how)."""
+    return Intent("open_file", {"path": path})
+
+
+def copy_path_intent(path: str) -> Intent:
+    """Request copying ``path`` (e.g. to the clipboard)."""
+    return Intent("copy_path", {"path": path})
+
+
+def delete_file_intent(path: str) -> Intent:
+    """Request deleting ``path`` — risky, so it is confirmed before delivery."""
+    return Intent("delete_file", {"path": path}, risky=True)
 
 
 # --- Live convenience (impure) -----------------------------------------------

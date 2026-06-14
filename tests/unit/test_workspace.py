@@ -130,6 +130,26 @@ def test_event_types_in_vocabulary() -> None:
     assert WORKSPACE_EVENT_TYPES <= KNOWN_EVENT_TYPES
 
 
+def test_file_action_intents() -> None:
+    from intui.kit.state import (
+        copy_path_intent,
+        delete_file_intent,
+        open_file_intent,
+    )
+
+    op = open_file_intent("src/app.py")
+    assert op.name == "open_file" and op.payload["path"] == "src/app.py" and not op.risky
+    cp = copy_path_intent("src/app.py")
+    assert cp.name == "copy_path" and cp.payload["path"] == "src/app.py"
+    dl = delete_file_intent("src/app.py")
+    assert dl.name == "delete_file" and dl.payload["path"] == "src/app.py" and dl.risky
+
+
+def test_file_action_intents_are_not_events() -> None:
+    # intents are requests, not stream events
+    assert {"open_file", "copy_path", "delete_file"}.isdisjoint(KNOWN_EVENT_TYPES)
+
+
 def test_scan_workspace_yields_relative_paths(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "app.py").write_text("x", encoding="utf-8")

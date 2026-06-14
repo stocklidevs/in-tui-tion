@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from intui.console import build_console
-from intui.events import NdjsonStreamSource, StreamState
+from intui.events import MemorySource, NdjsonStreamSource, StreamState
 from intui.kit import ViewRouter
 from intui.kit.state import evidence_view
 
@@ -106,3 +106,85 @@ async def test_public_safe_default_redacts_and_opt_out_reveals() -> None:
         rows = evidence_view(public_safe=False)(unsafe.store.snapshot).rows
         workdir = next(r for r in rows if r.key == "workdir")
         assert "run-42" in workdir.value  # full value shown
+
+
+# --- file actions (014) ------------------------------------------------------
+
+
+def _file_stream(path: str) -> MemorySource:
+    return MemorySource(
+        [
+            {
+                "version": "1",
+                "event_id": "f1",
+                "run_id": "r",
+                "timestamp": "2026-06-14T10:00:00Z",
+                "type": "file_written",
+                "scope": {},
+                "payload": {"path": path, "change_type": "added"},
+            }
+        ]
+    )
+
+
+async def _select_file(app: object, pilot: object, path: str) -> None:
+    from textual.widgets import Tree
+
+    from intui.kit import FileTree
+
+    await pilot.press("f")  # type: ignore[attr-defined]
+    await pilot.pause(0.05)  # type: ignore[attr-defined]
+    tree = app.query_one(FileTree).query_one(Tree)  # type: ignore[attr-defined]
+    tree.focus()
+    await pilot.pause()  # type: ignore[attr-defined]
+
+    def walk(node: object) -> object:
+        for child in node.children:  # type: ignore[attr-defined]
+            yield child
+            yield from walk(child)
+
+    node = next(n for n in walk(tree.root) if n.data == path)
+    tree.move_cursor(node)
+    await pilot.pause()  # type: ignore[attr-defined]
+
+
+async def test_copy_path_copies_to_clipboard() -> None:
+    app = build_console(_file_stream("src/app.py"))
+    copied: list[str] = []
+    app.copy_to_clipboard = copied.append  # type: ignore[method-assign]
+    async with app.run_test(size=(100, 30)) as pilot:
+        await _drain(app, pilot)
+        await _select_file(app, pilot, "src/app.py")
+        await pilot.press("c")
+        await pilot.pause(0.05)
+        assert copied == ["src/app.py"]
+
+
+async def test_default_console_does_not_delete(tmp_path: Path) -> None:
+    target = tmp_path / "victim.txt"
+    target.write_text("keep me", encoding="utf-8")
+    norm = str(target).replace("\\", "/")
+    app = build_console(_file_stream(norm))  # file_actions defaults False
+    async with app.run_test(size=(100, 30)) as pilot:
+        await _drain(app, pilot)
+        await _select_file(app, pilot, norm)
+        await pilot.press("x")
+        await pilot.pause(0.05)
+        await pilot.press("y")  # confirm
+        await pilot.pause(0.05)
+        assert target.exists()  # report-only: the viewer never deleted it
+
+
+async def test_file_actions_true_deletes_on_confirm(tmp_path: Path) -> None:
+    target = tmp_path / "victim.txt"
+    target.write_text("bye", encoding="utf-8")
+    norm = str(target).replace("\\", "/")
+    app = build_console(_file_stream(norm), file_actions=True)
+    async with app.run_test(size=(100, 30)) as pilot:
+        await _drain(app, pilot)
+        await _select_file(app, pilot, norm)
+        await pilot.press("x")
+        await pilot.pause(0.05)
+        await pilot.press("y")  # confirm
+        await pilot.pause(0.1)
+        assert not target.exists()  # real deletion when opted in

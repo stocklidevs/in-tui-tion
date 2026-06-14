@@ -40,7 +40,10 @@ The context managers auto-emit the started/completed pairs (and `failed` on
 exception); `rec.diff(...)` builds a unified diff and many diffs accumulate;
 `rec.file_written(...)` populates a **files** view (press `f` for the workspace
 tree — see the [file-tree quickstart](../specs/013-workspace-file-tree/quickstart.md)).
-See the [emit quickstart](../specs/012-producer-sdk/quickstart.md).
+In that view, `o`/`c`/`x` **request** open/copy/delete as intents your app
+fulfills (delete is confirmed; the library never touches disk —
+[file-actions quickstart](../specs/014-file-actions-intents/quickstart.md)). See
+the [emit quickstart](../specs/012-producer-sdk/quickstart.md).
 
 ### Or write the JSON Lines yourself
 
