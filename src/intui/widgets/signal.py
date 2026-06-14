@@ -33,11 +33,15 @@ class Signal(BoundWidget):
         styles: dict[str, StatusStyle],
         *,
         track_width: int = 10,
+        swoosh_glow: int = 2,
         **kwargs: Any,
     ) -> None:
         super().__init__(selector, **kwargs)
         self._styles = dict(styles)
         self._track_width = max(track_width, 3)
+        # Radius of the swoosh's fading glow on each side of the bright core
+        # (the KITT scanner spread). Larger = a fatter, brighter sweep.
+        self._swoosh_glow = max(swoosh_glow, 0)
         self._frame = 0
         self._status = ""
 
@@ -99,13 +103,23 @@ class Signal(BoundWidget):
             return ("▰" if (self._frame // int(_FPS / 2)) % 2 == 0 else "▱") * width
         if style.motion is MotionMode.STROBE:
             return ("█" if self._frame % 2 else " ") * width
-        # SWOOSH: a bright head sweeping back and forth across the track.
+        # SWOOSH: a bright core sweeping back and forth with a symmetric
+        # fading glow on each side — the KITT scanner. The core is brightest
+        # and the glow falls off over ``swoosh_glow`` cells via a density ramp.
+        if width <= 1:
+            return "█" * width
+        ramp = "█▓▒░"  # brightest -> dimmest
+        glow = self._swoosh_glow
         period = 2 * (width - 1)
         pos = self._frame % period
         head = pos if pos < width else period - pos
-        cells = ["·"] * width
-        for offset, char in ((2, "▪"), (1, "▮"), (0, "█")):
-            tail = head - offset if pos < width else head + offset
-            if 0 <= tail < width:
-                cells[tail] = char
+        cells = []
+        for i in range(width):
+            distance = abs(i - head)
+            if distance == 0:
+                cells.append("█")
+            elif distance <= glow:
+                cells.append(ramp[min(distance, len(ramp) - 1)])
+            else:
+                cells.append("·")  # unlit segment
         return "".join(cells)
