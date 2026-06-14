@@ -90,7 +90,11 @@ class ArtifactStore:
 
 _URL_CRED = re.compile(r"\w+://\S+")
 _WIN_PATH = re.compile(r"[A-Za-z]:[\\/][^\s;]+")
-_POSIX_PATH = re.compile(r"/(?:[\w.\-]+/)+[\w.\-]+")
+# Absolute POSIX paths only: the leading "/" must not follow a word char, so a
+# relative repo path (e.g. "src/integration_workbench/api.py") is NOT redacted —
+# those are exactly what a diff/file view should show, and over-redacting them
+# collapses distinct paths to one marker (see feature 011).
+_POSIX_PATH = re.compile(r"(?<!\w)/(?:[\w.\-]+/)+[\w.\-]+")
 _SK_TOKEN = re.compile(r"\bsk-[A-Za-z0-9]{6,}\b")
 _HIGH_ENTROPY = re.compile(
     r"\b(?=[A-Za-z0-9_\-]*\d)(?=[A-Za-z0-9_\-]*[A-Za-z])[A-Za-z0-9_\-]{20,}\b"
@@ -207,10 +211,35 @@ def artifacts_slice() -> tuple[Any, ArtifactStore]:
 
 def _reduce(state: ArtifactStore, event: Event) -> ArtifactStore:
     if event.type == "diff_ready":
-        return replace(state, diff=_build_diff(event))
+        return replace(state, diff=_accumulate_diff(state.diff, event))
     if event.type == "evidence_ready":
         return replace(state, evidence=_build_evidence(event))
     return state
+
+
+def _accumulate_diff(existing: DiffArtifact | None, event: Event) -> DiffArtifact:
+    """Merge this ``diff_ready`` into the running diff artifact by path.
+
+    Event streams are append-only facts ("this file changed"), so file diffs
+    accumulate: a new path is appended (first-seen order), an already-seen path
+    is replaced in place. A ``reset: true`` payload clears the accumulation first
+    (a snapshot producer's opt-out). The latest event supplies id/title/safety.
+    """
+    incoming = _build_diff(event)
+    reset = bool(event.payload.get("reset", False))
+    if existing is None or reset:
+        return incoming
+    return replace(incoming, files=_merge_files(existing.files, incoming.files))
+
+
+def _merge_files(old: tuple[FileDiff, ...], new: tuple[FileDiff, ...]) -> tuple[FileDiff, ...]:
+    by_path: dict[str, FileDiff] = {}
+    order: list[str] = []
+    for file in (*old, *new):
+        if file.raw_path not in by_path:
+            order.append(file.raw_path)
+        by_path[file.raw_path] = file
+    return tuple(by_path[path] for path in order)
 
 
 def _build_diff(event: Event) -> DiffArtifact:

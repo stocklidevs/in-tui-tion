@@ -84,6 +84,31 @@ populates more of them. No new canonical event types — `diff_ready` gains an
 
 **Why**: smallest change that delivers the outcome; keeps the contract stable.
 
+## D6 — Redaction over-reach on deep relative paths (found mid-implementation)
+
+**Finding**: Rendering the real IF run crashed the `DiffViewer` with
+`DuplicateIds`. Root cause: the public-safe redactor's `_POSIX_PATH` matched the
+*interior* of deep **relative** repo paths (`src/integration_workbench/api.py` →
+`src‹redacted›`), collapsing many distinct files to one display string — which
+collided both as widget IDs and in `DiffView.bodies` (keyed by path). Shallow
+relative paths (`src/app.py`) already survived (the regex needs ≥2 segments), so
+this was latent until a real multi-file, deep-path run hit it.
+
+**Decision**: (1) Tighten `_POSIX_PATH` to only match **absolute** POSIX paths —
+the leading `/` must not follow a word char (`(?<!\w)`), so relative repo paths
+survive (they aren't sensitive and are exactly what a diff view shows).
+(2) Defensively key `DiffViewer` list items by **index**, not path, so any
+future genuine path collision (a path that truly redacts) can't duplicate widget
+IDs.
+
+**Why**: relative paths are not secrets; over-redacting them made the multi-file
+diff useless under the default public-safe mode (the whole point of this
+feature). Absolute paths (`/home/…`, `C:\…`) and tokens/URLs stay redacted.
+
+**Alternatives rejected**: key `DiffView.bodies` by index too — larger change;
+fixing redaction makes paths distinct so bodies key cleanly, and the index-based
+widget IDs already remove the crash class.
+
 ## Open questions / deferred
 
 - **Activity strip on assembly-only streams**: no run/suite lifecycle event

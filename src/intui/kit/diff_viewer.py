@@ -66,25 +66,25 @@ class DiffViewer(BoundContainer):
         if not self._view.files:
             listview.append(ListItem(Static("no changes"), id="diff-empty"))
             return
-        for row in self._view.files:
+        for index, row in enumerate(self._view.files):
             if row.no_text_diff:
                 label = f"{row.path}  (no text diff)"
             else:
                 label = f"{row.path}  (+{row.added} -{row.removed})"
-            listview.append(ListItem(Static(label), id=self._item_id(row.path)))
-
-    @staticmethod
-    def _item_id(path: str) -> str:
-        safe = "".join(c if c.isalnum() else "_" for c in path)
-        return f"file_{safe}"
+            # Key by index, not path: redaction can collapse distinct paths to
+            # the same marker, which would otherwise duplicate widget IDs.
+            listview.append(ListItem(Static(label), id=f"file_{index}"))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         item_id = event.item.id or ""
-        for path in self._paths:
-            if self._item_id(path) == item_id:
-                self._selected = path
-                self._render_body()
+        if item_id.startswith("file_"):
+            try:
+                index = int(item_id.removeprefix("file_"))
+            except ValueError:
                 return
+            if 0 <= index < len(self._paths):
+                self._selected = self._paths[index]
+                self._render_body()
 
     def _render_body(self) -> None:
         body = self.query_one("#diff-body", Static)

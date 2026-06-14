@@ -68,6 +68,10 @@ class WorkItemView:
     title: str
     status: str
     last_summary: str | None = None
+    #: Raw parent id (the work item's ``scope.task_id``), or ``UNASSIGNED_KEY``
+    #: when it has no parent. Titles a synthesized parent node in the tree when
+    #: no explicit task event exists for the parent.
+    parent_id: str = UNASSIGNED_KEY
 
 
 @dataclass(frozen=True, slots=True)

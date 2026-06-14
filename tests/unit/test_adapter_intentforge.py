@@ -112,6 +112,35 @@ def test_summary_to_evidence_ready() -> None:
     assert "certified_level" in keys  # lifted from acb_score
 
 
+def test_suite_id_becomes_parent_task_scope() -> None:
+    # IF 0.9.13: assembly items carry suite_id (parent) + work_item_id.
+    ev = adapt_record(
+        _wrap(
+            "assembly_item_started",
+            {"case_id": "w1", "suite_id": "blueprint-x", "work_item_id": "w1"},
+        )
+    )
+    assert ev is not None and ev.type == "work_item_started"
+    assert ev.scope.task_id == "blueprint-x"
+    assert ev.scope.work_item_id == "w1"
+
+
+def test_file_diff_carries_suite_parent() -> None:
+    ev = adapt_record(
+        _wrap("file_diff", {"suite_id": "blueprint-x", "work_item_id": "w1", "diff": UNIFIED})
+    )
+    assert ev is not None and ev.type == "diff_ready"
+    assert ev.scope.task_id == "blueprint-x"
+    assert ev.scope.work_item_id == "w1"
+
+
+def test_no_suite_id_is_backward_compatible() -> None:
+    # Pre-0.9.13 stream: no suite_id -> no parent task scope (falls back later).
+    ev = adapt_record(_wrap("assembly_item_started", {"case_id": "w1"}))
+    assert ev is not None and ev.scope.task_id is None
+    assert ev.scope.work_item_id == "w1"
+
+
 def test_unknown_name_returns_none() -> None:
     assert adapt_record(_wrap("totally_made_up", {"case_id": "c1"})) is None
 

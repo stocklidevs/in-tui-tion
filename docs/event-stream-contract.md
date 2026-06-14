@@ -45,7 +45,7 @@ Mirrors `intui.kit.state.KNOWN_EVENT_TYPES`.
 | `task_started` | `task_id` | task active |
 | `task_completed` | `task_id` | task done (`status: failed` → failed, else completed) |
 | `task_blocked` | `task_id` | task blocked |
-| `work_item_started` | `task_id`, `work_item_id` | work item active under its task (no `task_id` → `unassigned`) |
+| `work_item_started` | `task_id`, `work_item_id` | work item active; nests under its `task_id` even with no task event (a parent node is synthesized); no `task_id` → `unassigned` |
 | `work_item_completed` | `task_id`, `work_item_id` | work item done (`status: failed` → failed) |
 | `subagent_started` | `lane_id`, `task_id?` | a worker/lane started (payload `name`) |
 | `subagent_activity` | `lane_id` | lane activity (`summary` = current activity) |
@@ -54,7 +54,7 @@ Mirrors `intui.kit.state.KNOWN_EVENT_TYPES`.
 ### Artifacts (→ diff viewer / evidence panel)
 | `type` | payload | meaning |
 |--------|---------|---------|
-| `diff_ready` | `title`, `unified` (unified-diff text) **or** `files` (structured); optional `public_safe` | the run's changed files |
+| `diff_ready` | `title`, `unified` (unified-diff text) **or** `files` (structured); optional `public_safe`, optional `reset` | a changed file (or files). **Accumulates by path** across events — stream one per file and the diff view lists them all; a repeated path updates in place. Send `reset: true` to clear the accumulated set (snapshot producers). |
 | `evidence_ready` | `title`, `metrics` (`[{key,label,value,status?,unsafe?}]`); optional `public_safe` | outcome metrics |
 
 ### Conversation (→ conversation log)

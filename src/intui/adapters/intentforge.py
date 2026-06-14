@@ -91,6 +91,13 @@ def _case_id(payload: Mapping[str, Any]) -> str:
     return cid if isinstance(cid, str) else ""
 
 
+def _suite_id(payload: Mapping[str, Any]) -> str | None:
+    # IF 0.9.13+ carries the parent blueprint/suite as suite_id; absent in older
+    # streams (work items then fall back to the kit's "unassigned" group).
+    sid = payload.get("suite_id")
+    return sid if isinstance(sid, str) and sid else None
+
+
 def _status(payload: Mapping[str, Any]) -> str | None:
     status = payload.get("status")
     return status if isinstance(status, str) else None
@@ -105,15 +112,20 @@ def _case_finished(p: Mapping[str, Any]) -> _Built:
 
 
 def _item_started(p: Mapping[str, Any]) -> _Built:
-    return "work_item_started", Scope(work_item_id=_item_id(p)), {}, None
+    return "work_item_started", Scope(task_id=_suite_id(p), work_item_id=_item_id(p)), {}, None
 
 
 def _item_committed(p: Mapping[str, Any]) -> _Built:
-    return "work_item_completed", Scope(work_item_id=_item_id(p)), {}, None
+    return "work_item_completed", Scope(task_id=_suite_id(p), work_item_id=_item_id(p)), {}, None
 
 
 def _item_failed(p: Mapping[str, Any]) -> _Built:
-    return "work_item_completed", Scope(work_item_id=_item_id(p)), {}, _status(p) or "failed"
+    return (
+        "work_item_completed",
+        Scope(task_id=_suite_id(p), work_item_id=_item_id(p)),
+        {},
+        _status(p) or "failed",
+    )
 
 
 def _plan_blocked(p: Mapping[str, Any]) -> _Built:
@@ -133,7 +145,7 @@ def _file_diff(p: Mapping[str, Any]) -> _Built:
     title = p.get("file")
     return (
         "diff_ready",
-        Scope(work_item_id=_item_id(p)),
+        Scope(task_id=_suite_id(p), work_item_id=_item_id(p)),
         {
             "unified": diff if isinstance(diff, str) else "",
             "title": title if isinstance(title, str) and title else "diff",
