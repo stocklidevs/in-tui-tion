@@ -37,8 +37,10 @@ intui watch -- python my_tool.py       # …or watch it live (emit to stdout)
 ```
 
 The context managers auto-emit the started/completed pairs (and `failed` on
-exception); `rec.diff(...)` builds a unified diff and many diffs accumulate. See
-the [emit quickstart](../specs/012-producer-sdk/quickstart.md).
+exception); `rec.diff(...)` builds a unified diff and many diffs accumulate;
+`rec.file_written(...)` populates a **files** view (press `f` for the workspace
+tree — see the [file-tree quickstart](../specs/013-workspace-file-tree/quickstart.md)).
+See the [emit quickstart](../specs/012-producer-sdk/quickstart.md).
 
 ### Or write the JSON Lines yourself
 

@@ -27,8 +27,11 @@ def main() -> None:
         rec.agent("Planning the build…")
         with rec.task("build", "Build the app") as build:
             with build.work_item("scaffold", "scaffold files"):
+                rec.file_written("README.md", change_type="added")
                 rec.diff("README.md", before=_README_BEFORE, after=_README_AFTER)
             with build.work_item("implement", "implement calc"):
+                rec.file_written("src/calc.py", change_type="added")
+                rec.file_written("src/__init__.py", change_type="added")
                 rec.diff("src/calc.py", before=_BEFORE, after=_AFTER)
         with rec.task("verify", "Verify") as verify, verify.work_item("tests", "run tests"):
             rec.agent("All tests passed.")

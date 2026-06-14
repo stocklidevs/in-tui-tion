@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from intui.kit.conversation_log import ConversationLog
     from intui.kit.diff_viewer import DiffViewer
     from intui.kit.evidence_panel import EvidencePanel
+    from intui.kit.file_tree import FileTree
     from intui.kit.lanes import LanesPanel
     from intui.kit.mode_strip import ModeStrip
     from intui.kit.prompt_input import PromptInput
@@ -28,6 +29,7 @@ __all__ = [
     "ConversationLog",
     "DiffViewer",
     "EvidencePanel",
+    "FileTree",
     "LanesPanel",
     "ModeStrip",
     "PromptInput",
@@ -44,6 +46,7 @@ _LAZY = {
     "CommandPalette": ("intui.kit.command_palette", "CommandPalette"),
     "DiffViewer": ("intui.kit.diff_viewer", "DiffViewer"),
     "EvidencePanel": ("intui.kit.evidence_panel", "EvidencePanel"),
+    "FileTree": ("intui.kit.file_tree", "FileTree"),
     "ModeStrip": ("intui.kit.mode_strip", "ModeStrip"),
     "ConversationLog": ("intui.kit.conversation_log", "ConversationLog"),
     "PromptInput": ("intui.kit.prompt_input", "PromptInput"),

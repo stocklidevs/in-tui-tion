@@ -88,6 +88,16 @@ from intui.kit.state.views import (
     view_router_view,
     view_slice,
 )
+from intui.kit.state.workspace import (
+    WORKSPACE_EVENT_TYPES,
+    FileEntry,
+    FileNode,
+    FileTreeView,
+    WorkspaceState,
+    file_tree_view,
+    scan_workspace,
+    workspace_slice,
+)
 
 #: The canonical event-stream vocabulary: every event ``type`` the bundled
 #: reducers consume. Producers can target this; unknown types are tolerated at
@@ -100,6 +110,7 @@ KNOWN_EVENT_TYPES = frozenset(
     | MODE_EVENT_TYPES
     | VIEW_EVENT_TYPES
     | RUN_STATUS_EVENT_TYPES
+    | WORKSPACE_EVENT_TYPES
 )
 
 __all__ = [
@@ -113,6 +124,7 @@ __all__ = [
     "RUN_STATUS_EVENT_TYPES",
     "TASKBOARD_EVENT_TYPES",
     "VIEW_EVENT_TYPES",
+    "WORKSPACE_EVENT_TYPES",
     "STATUS_PRESENTATION",
     "UNASSIGNED_KEY",
     "ArtifactStore",
@@ -136,6 +148,10 @@ __all__ = [
     "EvidenceRow",
     "EvidenceView",
     "FileDiff",
+    "FileEntry",
+    "FileNode",
+    "FileTreeView",
+    "WorkspaceState",
     "ModeEntry",
     "ModeState",
     "ModeView",
@@ -161,6 +177,7 @@ __all__ = [
     "prompt_message_event",
     "diff_view",
     "evidence_view",
+    "file_tree_view",
     "filter_commands",
     "lane_status_view",
     "lanes_view",
@@ -171,11 +188,13 @@ __all__ = [
     "redact",
     "run_status_reducer",
     "run_status_slice",
+    "scan_workspace",
     "select_view_intent",
     "status_presentation",
     "switch_mode_intent",
     "view_router_view",
     "view_slice",
+    "workspace_slice",
     "taskboard_from",
     "taskboard_slice",
     "tree_view",
