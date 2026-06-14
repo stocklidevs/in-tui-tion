@@ -18,6 +18,9 @@ from intui.events.envelope import Event
 from intui.state.snapshot import Snapshot
 from intui.viewmodels.selector import Selector
 
+#: Canonical event types the view-router reducer consumes (stream contract).
+VIEW_EVENT_TYPES = frozenset({"view_selected"})
+
 
 @dataclass(frozen=True, slots=True)
 class ViewState:

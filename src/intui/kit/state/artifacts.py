@@ -24,6 +24,9 @@ from intui.viewmodels.selector import Selector
 
 REDACTION_MARKER = "‹redacted›"
 
+#: Canonical event types the artifacts reducer consumes (stream contract).
+ARTIFACT_EVENT_TYPES = frozenset({"diff_ready", "evidence_ready"})
+
 
 # --- Models ------------------------------------------------------------------
 

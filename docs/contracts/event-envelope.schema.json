@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/stocklidevs/in-tui-tion/docs/contracts/event-envelope.schema.json",
+  "title": "in-TUI-tion Event Envelope",
+  "description": "Versioned append-only event envelope, schema version 1. Recordings are JSON Lines: one envelope object per line, UTF-8.",
+  "type": "object",
+  "required": ["version", "event_id", "run_id", "timestamp", "type", "scope"],
+  "properties": {
+    "version": {
+      "description": "Envelope schema version. Consumers reject unknown versions with a clear error.",
+      "type": "string",
+      "const": "1"
+    },
+    "event_id": {
+      "description": "Unique within a stream. Duplicate ids are ignored on append (append-only dedupe).",
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "description": "Identifies the run/session this event belongs to.",
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "description": "Producer-assigned UTC timestamp.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "description": "Open vocabulary. Unknown types are retained in the stream and flow through reduction untouched.",
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "description": "What the event is about. All keys optional; adapters may add keys.",
+      "type": "object",
+      "properties": {
+        "session_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "work_item_id": { "type": "string" },
+        "lane_id": { "type": "string" }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "status": {
+      "description": "Optional producer-declared status hint (e.g., running, passed, failed).",
+      "type": "string"
+    },
+    "summary": {
+      "description": "Optional one-line human-readable description.",
+      "type": "string"
+    },
+    "payload": {
+      "description": "Type-specific data. May carry public-safety metadata (e.g., public_safe), which the pipeline preserves untouched.",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

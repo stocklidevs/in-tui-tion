@@ -17,6 +17,9 @@ from intui.events.envelope import Event
 from intui.state.snapshot import Snapshot
 from intui.viewmodels.selector import Selector
 
+#: Canonical event types the mode reducer consumes (stream contract).
+MODE_EVENT_TYPES = frozenset({"mode_changed"})
+
 
 @dataclass(frozen=True, slots=True)
 class ModeState:

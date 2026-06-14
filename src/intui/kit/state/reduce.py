@@ -25,6 +25,10 @@ _TASK_EVENTS = {"task_created", "task_started", "task_completed", "task_blocked"
 _ITEM_EVENTS = {"work_item_started", "work_item_completed"}
 _LANE_EVENTS = {"subagent_started", "subagent_activity", "subagent_completed"}
 
+#: Canonical event types the taskboard reducer consumes (part of the stream
+#: contract; the reducer dispatches on these exact sets).
+TASKBOARD_EVENT_TYPES = frozenset(_TASK_EVENTS | _ITEM_EVENTS | _LANE_EVENTS)
+
 
 def taskboard_slice() -> tuple[Any, TaskBoardState]:
     """``(reducer, initial)`` pair for ``compose_reducers(taskboard=...)``."""

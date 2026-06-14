@@ -2,6 +2,7 @@
 
 from intui.kit.state.activity import ACTIVITY_STATES, ACTIVITY_STYLES, activity_style
 from intui.kit.state.artifacts import (
+    ARTIFACT_EVENT_TYPES,
     ArtifactStore,
     DiffArtifact,
     DiffFileRow,
@@ -29,6 +30,7 @@ from intui.kit.state.commands import (
     match_score,
 )
 from intui.kit.state.conversation import (
+    CONVERSATION_EVENT_TYPES,
     ConversationEntry,
     ConversationKind,
     ConversationRow,
@@ -49,6 +51,7 @@ from intui.kit.state.model import (
     status_presentation,
 )
 from intui.kit.state.modes import (
+    MODE_EVENT_TYPES,
     ModeEntry,
     ModeState,
     ModeView,
@@ -56,7 +59,7 @@ from intui.kit.state.modes import (
     mode_view,
     switch_mode_intent,
 )
-from intui.kit.state.reduce import taskboard_slice
+from intui.kit.state.reduce import TASKBOARD_EVENT_TYPES, taskboard_slice
 from intui.kit.state.selectors import (
     ChipRow,
     ChipView,
@@ -72,6 +75,7 @@ from intui.kit.state.selectors import (
     tree_view,
 )
 from intui.kit.state.views import (
+    VIEW_EVENT_TYPES,
     ViewEntry,
     ViewRouterView,
     ViewState,
@@ -80,10 +84,28 @@ from intui.kit.state.views import (
     view_slice,
 )
 
+#: The canonical event-stream vocabulary: every event ``type`` the bundled
+#: reducers consume. Producers can target this; unknown types are tolerated at
+#: runtime (reducers pass them through). Cannot drift — it is the union of each
+#: reducer module's declared set.
+KNOWN_EVENT_TYPES = frozenset(
+    TASKBOARD_EVENT_TYPES
+    | ARTIFACT_EVENT_TYPES
+    | CONVERSATION_EVENT_TYPES
+    | MODE_EVENT_TYPES
+    | VIEW_EVENT_TYPES
+)
+
 __all__ = [
     "ACTIVITY_STATES",
     "ACTIVITY_STYLES",
+    "ARTIFACT_EVENT_TYPES",
+    "CONVERSATION_EVENT_TYPES",
     "CORE_STATUSES",
+    "KNOWN_EVENT_TYPES",
+    "MODE_EVENT_TYPES",
+    "TASKBOARD_EVENT_TYPES",
+    "VIEW_EVENT_TYPES",
     "STATUS_PRESENTATION",
     "UNASSIGNED_KEY",
     "ArtifactStore",

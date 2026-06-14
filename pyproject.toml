@@ -4,14 +4,37 @@ build-backend = "hatchling.build"
 
 [project]
 name = "in-tui-tion"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A library for building rich, modern, first-class terminal user interfaces."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "stocklidevs" }]
+keywords = ["tui", "terminal", "textual", "console", "agent", "dashboard", "ui"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Terminals",
+    "Typing :: Typed",
+]
 dependencies = [
     "textual>=6,<7",
 ]
+
+[project.urls]
+Homepage = "https://github.com/stocklidevs/in-tui-tion"
+Repository = "https://github.com/stocklidevs/in-tui-tion"
+
+[tool.hatch.version]
+path = "src/intui/__init__.py"
 
 [dependency-groups]
 dev = [
@@ -20,6 +43,7 @@ dev = [
     "pytest-textual-snapshot>=1.0",
     "ruff>=0.8",
     "mypy>=1.13",
+    "jsonschema>=4",
 ]
 
 [tool.hatch.build.targets.wheel]

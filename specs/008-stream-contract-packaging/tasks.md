@@ -12,25 +12,25 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Add `jsonschema` as a dev-only dependency in `pyproject.toml` (for the language-agnostic schema check); `uv sync`
+- [X] T001 Add `jsonschema` as a dev-only dependency in `pyproject.toml` (for the language-agnostic schema check); `uv sync`
 
 ## Phase 2: User Story 1 — Canonical contract + validator (P1) [MVP]
 
-- [ ] T002 [P] [US1] Failing tests for the vocabulary registry in `tests/unit/test_vocabulary.py`: each module exposes its `*_EVENT_TYPES`; `KNOWN_EVENT_TYPES` equals their union; drift guard — feeding one event of each declared type to the bundled reducers changes the corresponding slice (no stale declarations)
-- [ ] T003 [P] [US1] Failing tests for the validator in `tests/unit/test_validate.py`: `validate_event` clean pass, each envelope error (missing field, bad timestamp, unknown version) reported; unknown `type` → warning when `known_types` given; `validate_stream` per-line numbers, blank-line skip, JSON-parse error, `event_record_types` unwrapping (`{"type":"run_trace_event","event":{...}}`)
-- [ ] T004 [US1] Add `*_EVENT_TYPES` constants to `reduce.py`/`artifacts.py`/`conversation.py`/`modes.py`/`views.py` and make each reducer reference its constant; export them + `KNOWN_EVENT_TYPES` (union) from `kit/state/__init__.py`
-- [ ] T005 [US1] Implement `src/intui/events/validate.py` (`StreamIssue`, `validate_event`, `validate_stream`) and export from `intui.events`
-- [ ] T006 [US1] Publish `docs/contracts/event-envelope.schema.json` (canonical) + failing/then-passing `tests/unit/test_schema.py` validating sample envelopes via `jsonschema`
-- [ ] T007 [US1] Write `docs/event-stream-contract.md`: the canonical vocabulary table, payload conventions, recommended lifecycle conventions, public-safety guidance; link the schema
+- [X] T002 [P] [US1] Failing tests for the vocabulary registry in `tests/unit/test_vocabulary.py`: each module exposes its `*_EVENT_TYPES`; `KNOWN_EVENT_TYPES` equals their union; drift guard — feeding one event of each declared type to the bundled reducers changes the corresponding slice (no stale declarations)
+- [X] T003 [P] [US1] Failing tests for the validator in `tests/unit/test_validate.py`: `validate_event` clean pass, each envelope error (missing field, bad timestamp, unknown version) reported; unknown `type` → warning when `known_types` given; `validate_stream` per-line numbers, blank-line skip, JSON-parse error, `event_record_types` unwrapping (`{"type":"run_trace_event","event":{...}}`)
+- [X] T004 [US1] Add `*_EVENT_TYPES` constants to `reduce.py`/`artifacts.py`/`conversation.py`/`modes.py`/`views.py` and make each reducer reference its constant; export them + `KNOWN_EVENT_TYPES` (union) from `kit/state/__init__.py`
+- [X] T005 [US1] Implement `src/intui/events/validate.py` (`StreamIssue`, `validate_event`, `validate_stream`) and export from `intui.events`
+- [X] T006 [US1] Publish `docs/contracts/event-envelope.schema.json` (canonical) + failing/then-passing `tests/unit/test_schema.py` validating sample envelopes via `jsonschema`
+- [X] T007 [US1] Write `docs/event-stream-contract.md`: the canonical vocabulary table, payload conventions, recommended lifecycle conventions, public-safety guidance; link the schema
 
 **Checkpoint**: a producer can read the contract and validate a stream headlessly.
 
 ## Phase 3: User Story 2 — Packaging (P1)
 
-- [ ] T008 [US2] Failing test for version single-source in `tests/unit/test_version.py`: `intui.__version__` equals `importlib.metadata.version("in-tui-tion")` (when installed) / matches the module source; one source only
-- [ ] T009 [US2] Switch `pyproject.toml` to dynamic version from `src/intui/__init__.py`; bump `__version__` to `0.8.0`; add `authors`, `keywords`, `classifiers`, `[project.urls]`; add `LICENSE` (MIT)
-- [ ] T010 [US2] Add `src/intui/py.typed` and ensure hatchling ships it in the wheel
-- [ ] T011 [US2] Build + clean-install verification: `uv build`, install the wheel into a throwaway env, assert `import intui`, `intui.__version__`, kit import, and `py.typed` present in the wheel; capture as a documented check (and a test that skips gracefully if no wheel)
+- [X] T008 [US2] Failing test for version single-source in `tests/unit/test_version.py`: `intui.__version__` equals `importlib.metadata.version("in-tui-tion")` (when installed) / matches the module source; one source only
+- [X] T009 [US2] Switch `pyproject.toml` to dynamic version from `src/intui/__init__.py`; bump `__version__` to `0.8.0`; add `authors`, `keywords`, `classifiers`, `[project.urls]`; add `LICENSE` (MIT)
+- [X] T010 [US2] Add `src/intui/py.typed` and ensure hatchling ships it in the wheel
+- [X] T011 [US2] Build + clean-install verification: `uv build`, install the wheel into a throwaway env, assert `import intui`, `intui.__version__`, kit import, and `py.typed` present in the wheel; capture as a documented check (and a test that skips gracefully if no wheel)
 
 **Checkpoint**: `pip install` works; package is typed; metadata is release-ready.
 
