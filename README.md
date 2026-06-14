@@ -44,6 +44,13 @@ pip install in-tui-tion        # or: uv add in-tui-tion
 
 Python 3.11+, a modern terminal, inline types (`py.typed`).
 
+Render a console from any compliant stream with **zero code**:
+
+```sh
+intui watch run.jsonl          # replay a captured stream
+intui watch -- my-agent --json # spawn a producer and watch it live
+```
+
 ## Quickstart
 
 Two paths — full guide in **[docs/quickstart.md](docs/quickstart.md)**:

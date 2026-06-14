@@ -25,7 +25,29 @@ that follow the [event-stream contract](event-stream-contract.md):
 {"version":"1","event_id":"e2","run_id":"r1","timestamp":"2026-06-14T10:00:02Z","type":"task_completed","scope":{"task_id":"build"},"status":"passed"}
 ```
 
-Validate your stream before wiring a console:
+Then render a full console — **zero code**:
+
+```sh
+intui watch run.jsonl                 # replay a captured stream
+intui watch -- my-agent --json        # spawn a producer, watch it live
+```
+
+Or from Python:
+
+```python
+from intui.console import watch
+
+watch("run.jsonl")                    # a path, or any EventSource
+```
+
+You get a KITT activity strip, a conversation panel, and a routable central
+view (`t` tasks, `l` lanes, `d` diff, `e` evidence) — public-safe by default
+(`--no-public-safe` to show full diffs/evidence). The runner unwraps wrapped
+records (`{"type":"run_trace_event","event":{…}}`) and ignores trailing
+non-event records, so real producer output works out of the box. See the
+[runner quickstart](../specs/009-console-runner/quickstart.md) for details.
+
+Validate your stream first if you like:
 
 ```python
 from intui.events import validate_stream
@@ -34,11 +56,6 @@ from intui.kit.state import KNOWN_EVENT_TYPES
 for issue in validate_stream("run.jsonl", known_types=KNOWN_EVENT_TYPES):
     print(issue.line, issue.severity, issue.reason)
 ```
-
-Then replay it through the pipeline (a zero-config `intui watch` runner that
-renders the full operator console from any compliant stream is the next
-feature; today you compose the console as in Path B and feed it a
-`JsonlReplaySource("run.jsonl")`).
 
 ---
 

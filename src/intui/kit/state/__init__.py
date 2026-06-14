@@ -60,6 +60,11 @@ from intui.kit.state.modes import (
     switch_mode_intent,
 )
 from intui.kit.state.reduce import TASKBOARD_EVENT_TYPES, taskboard_slice
+from intui.kit.state.run_status import (
+    RUN_STATUS_EVENT_TYPES,
+    run_status_reducer,
+    run_status_slice,
+)
 from intui.kit.state.selectors import (
     ChipRow,
     ChipView,
@@ -94,6 +99,7 @@ KNOWN_EVENT_TYPES = frozenset(
     | CONVERSATION_EVENT_TYPES
     | MODE_EVENT_TYPES
     | VIEW_EVENT_TYPES
+    | RUN_STATUS_EVENT_TYPES
 )
 
 __all__ = [
@@ -104,6 +110,7 @@ __all__ = [
     "CORE_STATUSES",
     "KNOWN_EVENT_TYPES",
     "MODE_EVENT_TYPES",
+    "RUN_STATUS_EVENT_TYPES",
     "TASKBOARD_EVENT_TYPES",
     "VIEW_EVENT_TYPES",
     "STATUS_PRESENTATION",
@@ -162,6 +169,8 @@ __all__ = [
     "mode_view",
     "parse_unified_diff",
     "redact",
+    "run_status_reducer",
+    "run_status_slice",
     "select_view_intent",
     "status_presentation",
     "switch_mode_intent",
