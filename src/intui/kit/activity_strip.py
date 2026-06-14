@@ -30,16 +30,21 @@ class ActivityStrip(Signal):
         *,
         swoosh_glow: int = 4,
         track_width: int | None = None,
+        fps: float = 30.0,
+        sweep_seconds: float = 1.6,
         **kwargs: Any,
     ) -> None:
         # A wider glow than a small inline Signal — this is the marquee KITT bar.
         # track_width=None (default) auto-fills the container width; pass an int
         # to fix the sweep to that many cells regardless of available width.
+        # sweep_seconds keeps one left->right pass that fast at any width.
         super().__init__(
             selector,
             dict(ACTIVITY_STYLES),
             track_width=track_width if track_width is not None else 12,
             swoosh_glow=swoosh_glow,
+            fps=fps,
+            sweep_seconds=sweep_seconds,
             **kwargs,
         )
         self._fixed_width = track_width is not None
