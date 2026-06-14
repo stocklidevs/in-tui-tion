@@ -92,11 +92,17 @@ class ConsoleApp(IntuiApp):
     """
 
     def __init__(
-        self, *, public_safe: bool = True, sweep_seconds: float = 1.6, **kwargs: object
+        self,
+        *,
+        public_safe: bool = True,
+        sweep_seconds: float = 1.6,
+        file_actions: bool = False,
+        **kwargs: object,
     ) -> None:
         super().__init__(**kwargs)  # type: ignore[arg-type]
         self._public_safe = public_safe
         self._sweep_seconds = sweep_seconds
+        self._file_actions = file_actions
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -145,7 +151,36 @@ class ConsoleApp(IntuiApp):
         if intent.name == "open_palette":
             self.open_command_palette(_command_registry())
             return
+        if intent.name in ("copy_path", "open_file", "delete_file"):
+            self._handle_file_action(intent)
+            return
         self.notify(f"intent: {intent.name}", timeout=2.0)
+
+    def _handle_file_action(self, intent: Intent) -> None:
+        """Fulfill a file-action intent.
+
+        ``copy_path`` (non-destructive) is handled for real. ``open_file`` and
+        ``delete_file`` only act when the app was built with
+        ``file_actions=True`` — a default console reports them but never mutates
+        the filesystem (Principle III / safe-by-default).
+        """
+        path = str(intent.payload.get("path", ""))
+        if intent.name == "copy_path":
+            self.copy_to_clipboard(path)
+            self.notify(f"copied: {path}", timeout=2.0)
+            return
+        if not self._file_actions:
+            self.notify(f"{intent.name}: {path} (read-only; file_actions=False)", timeout=3.0)
+            return
+        from intui.actions.files import delete_path, open_in_editor
+
+        if intent.name == "open_file":
+            open_in_editor(path)
+            self.notify(f"opened: {path}", timeout=2.0)
+        elif intent.name == "delete_file":  # already confirmed (risky)
+            delete_path(path)
+            self._emit("file_removed", path=path)  # reflect it back into the tree
+            self.notify(f"deleted: {path}", timeout=2.0)
 
 
 def build_console(
@@ -153,6 +188,7 @@ def build_console(
     *,
     public_safe: bool = True,
     sweep_seconds: float = 1.6,
+    file_actions: bool = False,
 ) -> ConsoleApp:
     """Build a :class:`ConsoleApp` over ``source`` with the canonical slices.
 
@@ -170,5 +206,9 @@ def build_console(
         )
     )
     return ConsoleApp(
-        store=store, source=source, public_safe=public_safe, sweep_seconds=sweep_seconds
+        store=store,
+        source=source,
+        public_safe=public_safe,
+        sweep_seconds=sweep_seconds,
+        file_actions=file_actions,
     )

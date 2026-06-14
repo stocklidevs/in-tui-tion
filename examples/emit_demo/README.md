@@ -37,6 +37,6 @@ with rec.run():
 The context managers auto-emit the `*_started`/`*_completed` pairs (and
 `failed` if a block raises); `rec.diff(...)` builds a unified diff with `difflib`
 and multiple diffs accumulate in the diff view; `rec.file_written(...)` populates
-the **files** view (press `f` for the workspace tree). The SDK emits **bare
-canonical envelopes**, so `intui watch` reads them with no adapter.
-"""
+the **files** view (press `f`; on a file, `o`/`c`/`x` request open/copy/delete as
+intents the app fulfills). The SDK emits **bare canonical envelopes**, so `intui
+watch` reads them with no adapter.
