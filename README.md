@@ -36,7 +36,24 @@ app adapter -> event stream -> reducer/state store -> view models
    public-safety redactor.
 4. **Examples** (`examples/`) — first-class runnable demos of every feature.
 
+## Install
+
+```sh
+pip install in-tui-tion        # or: uv add in-tui-tion
+```
+
+Python 3.11+, a modern terminal, inline types (`py.typed`).
+
 ## Quickstart
+
+Two paths — full guide in **[docs/quickstart.md](docs/quickstart.md)**:
+
+- **Stream-first** — emit JSON lines per the
+  **[event-stream contract](docs/event-stream-contract.md)** and the kit renders
+  them (validate with `intui.events.validate_stream`).
+- **Build-in-code** — compose the kit yourself.
+
+Run the examples from a checkout:
 
 ```sh
 uv sync
@@ -52,9 +69,9 @@ type into, and the signature full-width KITT activity strip, composing every
 kit component over one recorded run. See
 [examples/operator_console/README.md](examples/operator_console/README.md).
 
-See [examples/hello_replay/README.md](examples/hello_replay/README.md) and
-the feature quickstart at
-[specs/001-core-library-foundation/quickstart.md](specs/001-core-library-foundation/quickstart.md).
+The canonical event vocabulary every producer targets lives in
+**[docs/event-stream-contract.md](docs/event-stream-contract.md)** (single
+source of truth).
 
 ## Project governance
 
