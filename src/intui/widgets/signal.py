@@ -34,6 +34,8 @@ class Signal(BoundWidget):
         *,
         track_width: int = 10,
         swoosh_glow: int = 2,
+        fps: float = _FPS,
+        sweep_seconds: float | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(selector, **kwargs)
@@ -42,6 +44,11 @@ class Signal(BoundWidget):
         # Radius of the swoosh's fading glow on each side of the bright core
         # (the KITT scanner spread). Larger = a fatter, brighter sweep.
         self._swoosh_glow = max(swoosh_glow, 0)
+        # Animation frame rate, and (optional) seconds for one left->right
+        # sweep. With sweep_seconds set, the swoosh covers the whole track in
+        # that time regardless of width; otherwise it advances one cell/frame.
+        self._fps = max(fps, 1.0)
+        self._sweep_seconds = sweep_seconds
         self._frame = 0
         self._status = ""
 
@@ -55,7 +62,7 @@ class Signal(BoundWidget):
 
     def on_mount(self) -> None:
         super().on_mount()
-        self.set_interval(1.0 / _FPS, self._tick)
+        self.set_interval(1.0 / self._fps, self._tick)
 
     def _tick(self) -> None:
         style = self._current_style()
@@ -100,9 +107,11 @@ class Signal(BoundWidget):
         if style.motion is MotionMode.STEADY:
             return "▰" * width
         if style.motion is MotionMode.PULSE:
-            return ("▰" if (self._frame // int(_FPS / 2)) % 2 == 0 else "▱") * width
+            half = max(int(self._fps / 2), 1)  # ~0.5s on / 0.5s off
+            return ("▰" if (self._frame // half) % 2 == 0 else "▱") * width
         if style.motion is MotionMode.STROBE:
-            return ("█" if self._frame % 2 else " ") * width
+            beat = max(int(self._fps / 6), 1)  # ~6 Hz regardless of fps
+            return ("█" if (self._frame // beat) % 2 else " ") * width
         # SWOOSH: a bright core sweeping back and forth with a symmetric
         # fading glow on each side — the KITT scanner. The core is brightest
         # and the glow falls off over ``swoosh_glow`` cells via a density ramp.
@@ -110,9 +119,16 @@ class Signal(BoundWidget):
             return "█" * width
         ramp = "█▓▒░"  # brightest -> dimmest
         glow = self._swoosh_glow
-        period = 2 * (width - 1)
-        pos = self._frame % period
-        head = pos if pos < width else period - pos
+        travel = width - 1
+        if self._sweep_seconds and self._sweep_seconds > 0:
+            # One left->right pass takes sweep_seconds, width-independent.
+            ticks_per_dir = max(self._sweep_seconds * self._fps, 1.0)
+            phase = (self._frame / ticks_per_dir) % 2.0
+            head = round(phase * travel if phase <= 1.0 else (2.0 - phase) * travel)
+        else:
+            period = 2 * travel
+            pos = self._frame % period
+            head = pos if pos < width else period - pos
         cells = []
         for i in range(width):
             distance = abs(i - head)

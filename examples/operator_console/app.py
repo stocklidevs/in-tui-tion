@@ -128,7 +128,8 @@ class OperatorConsole(IntuiApp):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield ActivityStrip(activity_state)
+        # Larger, faster KITT bar: fat glow, full width, one sweep in ~1.6s.
+        yield ActivityStrip(activity_state, swoosh_glow=6, sweep_seconds=1.6)
         yield ModeStrip(mode_view(), keys=MODE_KEYS)
         with Horizontal(id="body"):
             with VerticalScroll(id="conversation-col"):
