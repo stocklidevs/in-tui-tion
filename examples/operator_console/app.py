@@ -109,15 +109,17 @@ class OperatorConsole(IntuiApp):
     TITLE = "in-TUI-tion · operator console"
     BINDINGS = [("q", "quit", "Quit"), ("ctrl+p", "palette", "Commands")]
     CSS = """
-    ActivityStrip { dock: top; height: 1; padding: 0 1; background: $panel; }
-    ModeStrip { dock: top; padding: 0 1; background: $panel; }
+    /* Header and Footer self-dock; everything else flows top-to-bottom.
+       (Multiple widgets sharing dock:top/bottom overlap, so we use flow +
+       a 1fr body that expands to push the bottom bars down.) */
+    ActivityStrip { height: 1; padding: 0 1; background: $panel; }
+    ModeStrip { height: 1; padding: 0 1; background: $panel; }
     #body { height: 1fr; }
     #conversation-col { width: 38; border-right: solid $panel; }
     ViewRouter { width: 1fr; padding: 0 1; }
     .col-title { text-style: bold; color: $text-muted; }
     EvidencePanel { height: auto; }
-    PromptInput { dock: bottom; }
-    CommandBar { dock: bottom; background: $panel; }
+    CommandBar { height: 1; background: $panel; }
     """
 
     def __init__(self, **kwargs: object) -> None:
