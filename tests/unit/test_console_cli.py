@@ -85,3 +85,33 @@ def test_command_form_runs(_no_terminal: list[dict[str, Any]]) -> None:
 def test_no_target_is_error(capsys: pytest.CaptureFixture[str]) -> None:
     rc = cli.main(["watch"])
     assert rc != 0
+
+
+def test_adapter_intentforge_file_wraps_source(
+    tmp_path: Path, _no_terminal: list[dict[str, Any]]
+) -> None:
+    from intui.adapters import IntentForgeSource
+
+    rc = cli.main(["watch", "--adapter", "intentforge", str(_stream_file(tmp_path))])
+    assert rc == 0
+    assert isinstance(_no_terminal[0]["source"], IntentForgeSource)
+
+
+def test_adapter_intentforge_command_wraps_source(_no_terminal: list[dict[str, Any]]) -> None:
+    import sys
+
+    from intui.adapters import IntentForgeSource
+
+    rc = cli.main(["watch", "--adapter", "intentforge", "--", sys.executable, "-c", "pass"])
+    assert rc == 0
+    assert isinstance(_no_terminal[0]["source"], IntentForgeSource)
+
+
+def test_default_adapter_none_uses_ndjson_source(
+    tmp_path: Path, _no_terminal: list[dict[str, Any]]
+) -> None:
+    from intui.events import NdjsonStreamSource
+
+    rc = cli.main(["watch", str(_stream_file(tmp_path))])
+    assert rc == 0
+    assert isinstance(_no_terminal[0]["source"], NdjsonStreamSource)

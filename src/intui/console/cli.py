@@ -14,6 +14,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from intui.adapters import IntentForgeSource
 from intui.console.app import build_console
 from intui.events import EventSource, NdjsonStreamSource, SubprocessSource
 
@@ -41,6 +42,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "--rate", type=float, default=None, help="replay rate in events/second (file form)"
     )
     parser.add_argument(
+        "--adapter",
+        choices=("none", "intentforge"),
+        default="none",
+        help="normalize a producer's stream (default: none = canonical vocabulary)",
+    )
+    parser.add_argument(
         "target",
         nargs="?",
         help="a .jsonl stream file (or use `-- <command>` to spawn a producer)",
@@ -51,8 +58,8 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     usage = (
-        "usage: intui watch [--public-safe|--no-public-safe] [--rate R] "
-        "(<file.jsonl> | -- <command>)"
+        "usage: intui watch [--adapter {none,intentforge}] "
+        "[--public-safe|--no-public-safe] [--rate R] (<file.jsonl> | -- <command>)"
     )
     if argv and argv[0] in ("-h", "--help", "help"):
         print(usage)
@@ -75,20 +82,29 @@ def main(argv: list[str] | None = None) -> int:
     except SystemExit as exc:  # argparse already printed a message
         return int(exc.code or 2)
 
+    intentforge = ns.adapter == "intentforge"
     source: EventSource
     if cmd is not None:
         if not cmd:
             return _fail("no command given after `--`")
         if shutil.which(cmd[0]) is None and not Path(cmd[0]).is_file():
             return _fail(f"command not found: {cmd[0]}")
-        source = SubprocessSource(cmd, event_record_types=DEFAULT_RECORD_TYPES)
+        source = (
+            IntentForgeSource.from_command(cmd)
+            if intentforge
+            else SubprocessSource(cmd, event_record_types=DEFAULT_RECORD_TYPES)
+        )
     else:
         if ns.target is None:
             return _fail("no stream file or `-- <command>` given")
         path = Path(ns.target)
         if not path.is_file():
             return _fail(f"file not found: {ns.target}")
-        source = NdjsonStreamSource(path, event_record_types=DEFAULT_RECORD_TYPES, rate=ns.rate)
+        source = (
+            IntentForgeSource(path)
+            if intentforge
+            else NdjsonStreamSource(path, event_record_types=DEFAULT_RECORD_TYPES, rate=ns.rate)
+        )
 
     app = build_console(source, public_safe=ns.public_safe)
     app.run()

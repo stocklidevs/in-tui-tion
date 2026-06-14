@@ -1,0 +1,8 @@
+{"type":"run_trace_event","event":{"sequence":1,"name":"matrix_suite_started","payload":{"suite_id":"demo-suite"}}}
+{"type":"run_trace_event","event":{"sequence":2,"name":"case_started","payload":{"case_id":"add-feature","index":1,"total":1}}}
+{"type":"run_trace_event","event":{"sequence":3,"name":"assembly_item_started","payload":{"case_id":"calc-module"}}}
+{"type":"run_trace_event","event":{"sequence":4,"name":"file_diff","payload":{"case_id":"calc-module","work_item_id":"calc-module","file":"src/calc.py","change_type":"modified","additions":3,"deletions":1,"diff":"--- a/src/calc.py\n+++ b/src/calc.py\n@@ -1,3 +1,4 @@\n def add(a, b):\n-    return a + b\n+    return a + b  # sum\n+\n+def sub(a, b):\n+    return a - b\n","truncated":false}}}
+{"type":"run_trace_event","event":{"sequence":5,"name":"assembly_item_committed","payload":{"case_id":"calc-module","status":"committed"}}}
+{"type":"run_trace_event","event":{"sequence":6,"name":"case_finished","payload":{"case_id":"add-feature","status":"passed","duration_ms":1240}}}
+{"type":"run_trace_event","event":{"sequence":7,"name":"matrix_suite_finished","payload":{"suite_id":"demo-suite","status":"passed"}}}
+{"type":"summary","summary":{"case_pass_rate":1.0,"quality_issue_count":0,"delivered_files":1,"acb_score":{"certified_level":"gold"}}}

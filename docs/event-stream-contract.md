@@ -95,3 +95,14 @@ plus a trailing summary record. Validate those with:
 validate_stream(lines, known_types=KNOWN_EVENT_TYPES,
                 event_record_types=("run_trace_event",))
 ```
+
+## Adapters (non-canonical producers)
+
+This canonical vocabulary is the target. A producer that emits *different* event
+names (or a non-envelope record shape) is normalized by a thin **adapter** in
+`intui.adapters` — a pure `record → canonical Event` mapping plus an
+`EventSource`. The bundled **IntentForge** adapter
+(`intui.adapters.IntentForgeSource`, `intui watch --adapter intentforge`) maps
+IF's `{sequence,name,payload}` run-trace records onto the types above. Adapters
+are engine-free and do not change this contract; see
+`specs/010-intentforge-adapter/`.
