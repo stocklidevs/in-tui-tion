@@ -52,13 +52,23 @@ intui watch -- my-agent --json # spawn a producer and watch it live
 intui watch --adapter intentforge run.ndjson  # normalize an IntentForge run
 ```
 
+…and produce that stream from your own tool in a few lines — no JSON by hand:
+
+```python
+from intui import run_recorder
+with run_recorder("run.ndjson") as rec, rec.run():
+    with rec.task("build", "Build the app"):
+        rec.diff("src/app.py", before=old, after=new)
+    rec.evidence(pass_rate="92%", certified="gold")
+```
+
 ## Quickstart
 
 Two paths — full guide in **[docs/quickstart.md](docs/quickstart.md)**:
 
-- **Stream-first** — emit JSON lines per the
-  **[event-stream contract](docs/event-stream-contract.md)** and the kit renders
-  them (validate with `intui.events.validate_stream`).
+- **Stream-first** — emit events with the **Producer SDK** (`run_recorder`) or
+  as JSON lines per the **[event-stream contract](docs/event-stream-contract.md)**,
+  and the kit renders them.
 - **Build-in-code** — compose the kit yourself.
 
 Run the examples from a checkout:
