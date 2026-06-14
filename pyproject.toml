@@ -33,6 +33,9 @@ dependencies = [
 Homepage = "https://github.com/stocklidevs/in-tui-tion"
 Repository = "https://github.com/stocklidevs/in-tui-tion"
 
+[project.scripts]
+intui = "intui.console.cli:main"
+
 [tool.hatch.version]
 path = "src/intui/__init__.py"
 
@@ -86,7 +89,10 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "TID"]
 "src/intui/kit/prompt_input.py" = ["TID251"]
 "src/intui/kit/activity_strip.py" = ["TID251"]
 "src/intui/kit/view_router.py" = ["TID251"]
+# The zero-config console runner is layer-2 rendering code (composes the kit).
+"src/intui/console/app.py" = ["TID251"]
 "tests/snapshot/**" = ["TID251"]
+"tests/integration/**" = ["TID251"]
 "tests/replay/test_responsiveness.py" = ["TID251"]  # drives a real app under load
 "examples/**" = ["TID251"]
 

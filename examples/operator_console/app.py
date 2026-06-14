@@ -45,6 +45,7 @@ from intui.kit.state import (
     mode_slice,
     mode_view,
     prompt_message_event,
+    run_status_slice,
     select_view_intent,
     taskboard_slice,
     tree_view,
@@ -60,23 +61,6 @@ MODE_KEYS = {"1": "Plan", "2": "Build", "3": "Inspect", "4": "Review"}
 VIEWS = ("tasks", "lanes", "diff", "evidence")
 # The "complement" relationship: each mode preselects a default central view.
 MODE_DEFAULT_VIEW = {"Plan": "tasks", "Build": "tasks", "Inspect": "diff", "Review": "evidence"}
-
-
-def run_status_reducer(status: str, event: Event) -> str:
-    """Map run + synthetic events to R6 activity states for the KITT strip."""
-    if event.type == "activity_set":
-        return str(event.payload["state"])
-    if event.type in {"run_started", "task_started", "subagent_started"}:
-        return "thinking"
-    if event.type == "task_blocked":
-        return "waiting"
-    if event.type == "gate_started":
-        return "verifying"
-    if event.type == "run_failed":
-        return "failure"
-    if event.type == "run_completed":
-        return "passed"
-    return status
 
 
 @selector
@@ -214,7 +198,7 @@ def build_app(events_per_second: float = 4.0) -> OperatorConsole:
             conversation=conversation_slice(),
             taskboard=taskboard_slice(),
             artifacts=artifacts_slice(),
-            run_status=(run_status_reducer, "idle"),
+            run_status=run_status_slice(),
         )
     )
     return OperatorConsole(

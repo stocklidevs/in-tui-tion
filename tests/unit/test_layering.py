@@ -45,3 +45,19 @@ def test_core_packages_do_not_import_terminal_engine() -> None:
         [sys.executable, "-c", code], capture_output=True, text=True, check=False
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_root_import_stays_engine_free_and_excludes_console() -> None:
+    # Importing the package root must not pull in Textual or the rendering-layer
+    # console runner (it lives in intui.console, imported explicitly by users).
+    code = (
+        "import importlib, sys\n"
+        "importlib.import_module('intui')\n"
+        f"leaked = sorted(m for m in sys.modules if m.partition('.')[0] in {BANNED_PREFIXES!r})\n"
+        "assert not leaked, f'engine modules leaked into root import: {leaked}'\n"
+        "assert 'intui.console' not in sys.modules, 'intui.console leaked into root import'\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=False
+    )
+    assert result.returncode == 0, result.stderr

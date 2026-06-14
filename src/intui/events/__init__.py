@@ -2,7 +2,13 @@
 
 from intui.events.envelope import EnvelopeError, Event, Scope, parse_event
 from intui.events.recording import read_recording, write_recording
-from intui.events.sources import EventSource, JsonlReplaySource, MemorySource
+from intui.events.sources import (
+    EventSource,
+    JsonlReplaySource,
+    MemorySource,
+    NdjsonStreamSource,
+    SubprocessSource,
+)
 from intui.events.stream import EventStream, StreamError, StreamHealth, StreamState
 from intui.events.validate import StreamIssue, validate_event, validate_stream
 
@@ -13,6 +19,8 @@ __all__ = [
     "EventStream",
     "JsonlReplaySource",
     "MemorySource",
+    "NdjsonStreamSource",
+    "SubprocessSource",
     "Scope",
     "StreamError",
     "StreamHealth",
