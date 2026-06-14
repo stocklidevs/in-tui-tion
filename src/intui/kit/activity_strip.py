@@ -24,11 +24,25 @@ class ActivityStrip(Signal):
     ActivityStrip { height: 1; width: 1fr; }
     """
 
-    def __init__(self, selector: Selector[str], *, swoosh_glow: int = 4, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        selector: Selector[str],
+        *,
+        swoosh_glow: int = 4,
+        track_width: int | None = None,
+        **kwargs: Any,
+    ) -> None:
         # A wider glow than a small inline Signal — this is the marquee KITT bar.
+        # track_width=None (default) auto-fills the container width; pass an int
+        # to fix the sweep to that many cells regardless of available width.
         super().__init__(
-            selector, dict(ACTIVITY_STYLES), track_width=12, swoosh_glow=swoosh_glow, **kwargs
+            selector,
+            dict(ACTIVITY_STYLES),
+            track_width=track_width if track_width is not None else 12,
+            swoosh_glow=swoosh_glow,
+            **kwargs,
         )
+        self._fixed_width = track_width is not None
 
     def _current_style(self) -> StatusStyle:
         # Use the activity mapping so unknown states keep their raw label
@@ -36,6 +50,8 @@ class ActivityStrip(Signal):
         return activity_style(self._status)
 
     def on_resize(self) -> None:
+        if self._fixed_width:
+            return  # explicit track_width — do not auto-fill
         width = self.size.width
         if width:
             self._track_width = max(width - _LABEL_RESERVE, _MIN_TRACK)

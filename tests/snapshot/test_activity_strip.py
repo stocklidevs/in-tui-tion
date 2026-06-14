@@ -107,6 +107,28 @@ def test_swoosh_glow_widens_the_sweep() -> None:
     assert lit(wide) > lit(narrow)
 
 
+async def test_fixed_track_width_is_respected() -> None:
+    # An explicit track_width fixes the sweep and is not overwritten on resize.
+    from intui.viewmodels import selector
+
+    sel = selector(lambda _snap: "passed")  # steady -> track is the full width
+    app_store = Store(compose_reducers(activity=(status_reducer, "passed")))
+
+    class FixedApp(IntuiApp):
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+            self.strip = ActivityStrip(sel, track_width=8)
+
+        def compose(self) -> ComposeResult:
+            yield self.strip
+
+    app = FixedApp(store=app_store)
+    async with app.run_test(size=(120, 6)) as pilot:
+        await pilot.pause(0.05)
+        # steady track is exactly track_width cells, regardless of the 120-wide app
+        assert app.strip._track_width == 8
+
+
 async def test_unknown_state_neutral_fallback() -> None:
     app, store = build()
     async with app.run_test() as pilot:
