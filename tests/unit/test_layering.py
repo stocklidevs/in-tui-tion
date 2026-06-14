@@ -17,6 +17,7 @@ CORE_PACKAGES = [
     "intui.actions",
     "intui.theming",
     "intui.kit.state",
+    "intui.adapters",
 ]
 
 BANNED_PREFIXES = ("textual", "rich")

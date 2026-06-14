@@ -8,7 +8,7 @@ files). Gate after each phase: `uv run pytest && uv run ruff check && uv run myp
 
 ## Phase 1 — Pure normalizer `adapt_record`
 
-- [ ] **T001** [P] Write `tests/unit/test_adapter_intentforge.py`: per-event
+- [x] **T001** [P] Write `tests/unit/test_adapter_intentforge.py`: per-event
       mapping (case_started→task_started w/ scope.task_id; case_finished failed→
       task_completed status failed; assembly_item_started→work_item_started w/
       work_item_id from case_id; committed/failed; assembly_plan_blocked→
@@ -18,64 +18,64 @@ files). Gate after each phase: `uv run pytest && uv run ruff check && uv run myp
       event_id/timestamp from sequence; accepts wrapper AND bare inner; empty/
       missing diff→diff_ready empty (no raise); validator round-trip
       (validate_event against KNOWN_EVENT_TYPES → no errors). (Tests fail.)
-- [ ] **T002** Create `src/intui/adapters/__init__.py` and
+- [x] **T002** Create `src/intui/adapters/__init__.py` and
       `src/intui/adapters/intentforge.py`: `adapt_record`, the name→canonical
       mapping, EPOCH constant, summary metric extraction; engine-free.
-- [ ] **T003** Export `adapt_record` (and `IntentForgeSource`, added in Phase 2)
+- [x] **T003** Export `adapt_record` (and `IntentForgeSource`, added in Phase 2)
       from `src/intui/adapters/__init__.py`; make T001 pass.
 
 ## Phase 2 — `IntentForgeSource` + shared subprocess helper
 
-- [ ] **T004** Refactor `src/intui/events/sources.py`: extract
+- [x] **T004** Refactor `src/intui/events/sources.py`: extract
       `_aiter_subprocess_lines(cmd) -> AsyncIterator[str]`; have `SubprocessSource`
       decode those lines (no behavior change — 009 subprocess tests stay green).
-- [ ] **T005** [P] Write `tests/unit/test_intentforge_source.py`: a committed/
+- [x] **T005** [P] Write `tests/unit/test_intentforge_source.py`: a committed/
       inline IF-shaped ndjson (wrapper lines + summary) through a `Store` reduces
       taskboard + artifacts (diff + evidence); a spawned `sys.executable -c`
       IF-shaped producer → store ENDED; malformed line surfaced via health.
-- [ ] **T006** Implement `IntentForgeSource` in
+- [x] **T006** Implement `IntentForgeSource` in
       `src/intui/adapters/intentforge.py` (reads raw lines via `_aiter_text_lines`;
       `.from_command` via `_aiter_subprocess_lines`; json.loads + adapt_record;
       malformed→marker; unmapped→skip); make T005 pass.
 
 ## Phase 3 — CLI `--adapter intentforge`
 
-- [ ] **T007** [P] Extend `tests/unit/test_console_cli.py`: `--adapter
+- [x] **T007** [P] Extend `tests/unit/test_console_cli.py`: `--adapter
       intentforge <file>` wraps the source in `IntentForgeSource` (assert via the
       stubbed build_console source type); `--adapter intentforge -- <cmd>` uses
       `IntentForgeSource.from_command`; default `none` unchanged.
-- [ ] **T008** Add `--adapter {none,intentforge}` to `src/intui/console/cli.py`;
+- [x] **T008** Add `--adapter {none,intentforge}` to `src/intui/console/cli.py`;
       wrap the file/subprocess source when `intentforge`; make T007 pass.
 
 ## Phase 4 — Example + fixture (Pilot)
 
-- [ ] **T009** [P] Add `examples/intentforge_console/run.ndjson`: a small but
+- [x] **T009** [P] Add `examples/intentforge_console/run.ndjson`: a small but
       representative IF-shaped stream (matrix_suite_started, a case with two
       assembly items, a file_diff with a real unified diff, case_finished,
       matrix_suite_finished, trailing summary).
-- [ ] **T010** Implement `examples/intentforge_console/{__init__,__main__,app}.py`
+- [x] **T010** Implement `examples/intentforge_console/{__init__,__main__,app}.py`
       + `README.md`: build a `ConsoleApp` over `IntentForgeSource(run.ndjson)`.
-- [ ] **T011** Write `tests/integration/test_intentforge_console.py` (Pilot):
+- [x] **T011** Write `tests/integration/test_intentforge_console.py` (Pilot):
       the fixture renders through `ConsoleApp` — taskboard, work items, diff, and
       evidence reduced; press `d`/`e` and assert the views; stream-ended health.
 
 ## Phase 5 — Layering, docs, gate, verify, merge
 
-- [ ] **T012** Confirm the layering guard covers `intui.adapters` (add to
+- [x] **T012** Confirm the layering guard covers `intui.adapters` (add to
       CORE_PACKAGES in `tests/unit/test_layering.py` if not auto-walked) — adapter
       stays engine-free.
-- [ ] **T013** [P] Docs: add an "IntentForge adapter" section to
+- [x] **T013** [P] Docs: add an "IntentForge adapter" section to
       `docs/quickstart.md` and link `specs/010-intentforge-adapter/quickstart.md`;
       README one-liner (`intui watch --adapter intentforge run.ndjson`).
-- [ ] **T014** Update `docs/event-stream-contract.md` with a short "Adapters"
+- [x] **T014** Update `docs/event-stream-contract.md` with a short "Adapters"
       note (canonical is the target; IF adapter normalizes a non-canonical
       producer) if appropriate.
-- [ ] **T015** Full gate: `uv run pytest && uv run ruff check && uv run mypy`;
+- [x] **T015** Full gate: `uv run pytest && uv run ruff check && uv run mypy`;
       bump `src/intui/__init__.py` `__version__` to `0.10.0`.
-- [ ] **T016** Fresh-build verify: `uv build`; clean-install the wheel; confirm
+- [x] **T016** Fresh-build verify: `uv build`; clean-install the wheel; confirm
       `from intui.adapters import adapt_record, IntentForgeSource` imports and
       `intui watch --adapter intentforge <fixture>` parses (or `--help`).
-- [ ] **T017** Merge: `git merge --no-ff` `010-intentforge-adapter` into `main`;
+- [x] **T017** Merge: `git merge --no-ff` `010-intentforge-adapter` into `main`;
       update project memory (010 done; IF integration loop closed).
 
 ## Dependencies

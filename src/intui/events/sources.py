@@ -170,22 +170,32 @@ class SubprocessSource:
         self._event_record_types = event_record_types
 
     async def __aiter__(self) -> AsyncIterator[Mapping[str, Any]]:
-        process = await asyncio.create_subprocess_exec(
-            *self._cmd,
-            stdin=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL,
-        )
-        assert process.stdout is not None
         line_number = 0
-        try:
-            async for raw in process.stdout:
-                line_number += 1
-                decoded = _decode_ndjson_line(
-                    raw.decode("utf-8", "replace"), line_number, self._event_record_types
-                )
-                if decoded is not None:
-                    yield decoded
-        finally:
-            if process.returncode is None:
-                await process.wait()
+        async for line in _aiter_subprocess_lines(self._cmd):
+            line_number += 1
+            decoded = _decode_ndjson_line(line, line_number, self._event_record_types)
+            if decoded is not None:
+                yield decoded
+
+
+async def _aiter_subprocess_lines(cmd: Sequence[str]) -> AsyncIterator[str]:
+    """Spawn ``cmd`` (no shell) and yield its stdout lines as text.
+
+    Shared by :class:`SubprocessSource` and the IntentForge adapter source.
+    Child stdout EOF ends iteration naturally; a spawn failure raises out of the
+    generator (callers surface it as a disconnect). The parent's stdin is never
+    read, so a hosting TUI keeps the keyboard.
+    """
+    process = await asyncio.create_subprocess_exec(
+        *cmd,
+        stdin=asyncio.subprocess.DEVNULL,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.DEVNULL,
+    )
+    assert process.stdout is not None
+    try:
+        async for raw in process.stdout:
+            yield raw.decode("utf-8", "replace")
+    finally:
+        if process.returncode is None:
+            await process.wait()

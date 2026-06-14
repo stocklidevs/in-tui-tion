@@ -49,6 +49,7 @@ Render a console from any compliant stream with **zero code**:
 ```sh
 intui watch run.jsonl          # replay a captured stream
 intui watch -- my-agent --json # spawn a producer and watch it live
+intui watch --adapter intentforge run.ndjson  # normalize an IntentForge run
 ```
 
 ## Quickstart

@@ -57,6 +57,26 @@ for issue in validate_stream("run.jsonl", known_types=KNOWN_EVENT_TYPES):
     print(issue.line, issue.severity, issue.reason)
 ```
 
+### Producer doesn't speak the canonical vocabulary? Use an adapter.
+
+If your tool emits its own event names, a thin adapter normalizes them. The
+built-in **IntentForge** adapter renders an `intentforge … --event-stream
+ndjson` run with no IF-specific code:
+
+```sh
+intui watch --adapter intentforge run.ndjson           # replay a captured run
+intui watch --adapter intentforge -- intentforge …     # watch a live run
+```
+
+```python
+from intui.console import watch
+from intui.adapters import IntentForgeSource
+
+watch(IntentForgeSource("run.ndjson"))
+```
+
+See the [adapter quickstart](../specs/010-intentforge-adapter/quickstart.md).
+
 ---
 
 ## Path B — build in code
