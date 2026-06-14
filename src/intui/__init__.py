@@ -8,6 +8,7 @@ Public API contract: specs/001-core-library-foundation/contracts/public-api.md
 """
 
 from intui.actions import ConfirmationFlow, Intent, IntentHandler
+from intui.emit import RunRecorder, run_recorder
 from intui.events import (
     EnvelopeError,
     Event,
@@ -36,7 +37,7 @@ from intui.theming import (
 )
 from intui.viewmodels import HealthView, Selector, health_view, selector
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 
 __all__ = [
     "ConfirmationFlow",
@@ -53,6 +54,7 @@ __all__ = [
     "MotionMode",
     "Reducer",
     "ReducerError",
+    "RunRecorder",
     "Scope",
     "Selector",
     "SliceReducer",
@@ -69,6 +71,7 @@ __all__ = [
     "parse_event",
     "read_recording",
     "resolve_status_style",
+    "run_recorder",
     "selector",
     "validate_event",
     "validate_stream",

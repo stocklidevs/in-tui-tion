@@ -14,11 +14,35 @@ Terminal/iTerm2, common Linux/WSL terminals). The package ships inline types
 
 ---
 
-## Path A — stream-first (emit JSON, get a console)
+## Path A — stream-first (emit events, get a console)
 
 If your tool already does the work (an agent, a CI job, a pipeline), you don't
-write UI code — you **emit events** and let the kit render them. Emit JSON Lines
-that follow the [event-stream contract](event-stream-contract.md):
+write UI code — you **emit events** and let the kit render them.
+
+### Easiest: the Producer SDK (no JSON by hand)
+
+```python
+from intui import run_recorder
+
+with run_recorder("run.ndjson") as rec, rec.run():
+    with rec.task("build", "Build the app") as build:
+        with build.work_item("compile"):
+            rec.diff("src/app.py", before=old, after=new)
+    rec.evidence(pass_rate="92%", certified="gold")
+```
+
+```sh
+intui watch run.ndjson                 # replay it
+intui watch -- python my_tool.py       # …or watch it live (emit to stdout)
+```
+
+The context managers auto-emit the started/completed pairs (and `failed` on
+exception); `rec.diff(...)` builds a unified diff and many diffs accumulate. See
+the [emit quickstart](../specs/012-producer-sdk/quickstart.md).
+
+### Or write the JSON Lines yourself
+
+Emit lines that follow the [event-stream contract](event-stream-contract.md):
 
 ```json
 {"version":"1","event_id":"e1","run_id":"r1","timestamp":"2026-06-14T10:00:00Z","type":"task_started","scope":{"task_id":"build"},"summary":"Building"}
