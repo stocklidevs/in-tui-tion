@@ -122,6 +122,17 @@ def _flatten(nodes: tuple) -> list:
     return out
 
 
+def test_absolute_posix_path_kept_for_actions() -> None:
+    # A leading "/" must survive normalization so file actions target the real
+    # (absolute) file — regression for a cross-platform bug where strip("/")
+    # turned "/tmp/x" into a relative "tmp/x" on POSIX.
+    store = _store()
+    store.ingest(_event("file_written", path="/var/log/out.log"))
+    roots = file_tree_view(public_safe=False)(store.snapshot).roots
+    leaf = next(n for n in _flatten(roots) if not n.is_dir)
+    assert leaf.path == "/var/log/out.log"
+
+
 def test_empty_workspace() -> None:
     assert file_tree_view()(_store().snapshot).roots == ()
 

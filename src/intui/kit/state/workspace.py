@@ -34,11 +34,16 @@ _DIR_GLYPH = "/"
 
 
 def _normalize(path: str) -> str:
-    """Normalize a path for keying: ``\\``→``/``, strip ``./`` and edges."""
+    """Normalize a path for keying: ``\\``→``/``, strip ``./`` and trailing ``/``.
+
+    A *leading* ``/`` is kept — an absolute POSIX path must stay absolute so file
+    actions target the real file (display safety is handled by redaction, not by
+    mangling the path). Only ``./`` prefixes and trailing slashes are trimmed.
+    """
     norm = path.replace("\\", "/").strip()
     while norm.startswith("./"):
         norm = norm[2:]
-    return norm.strip("/")
+    return norm.rstrip("/")
 
 
 # --- Models ------------------------------------------------------------------
