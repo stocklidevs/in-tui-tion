@@ -86,6 +86,13 @@ for issue in validate_stream("run.jsonl", known_types=KNOWN_EVENT_TYPES):
     print(issue.line, issue.severity, issue.reason)
 ```
 
+### Time-travel through a run
+
+In the console, `space` pauses/resumes, `,`/`.` step back/forward one event,
+`home` rewinds to the start, `end` resumes to live. Every panel shows the run
+*as it was* at that point (it's just `reduce(events[:n])`). See the
+[scrubber quickstart](../specs/017-time-travel-scrubber/quickstart.md).
+
 ### Follow a growing file, and record what you watch
 
 ```sh

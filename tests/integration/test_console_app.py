@@ -305,3 +305,86 @@ async def test_record_of_adapted_source_is_canonical(tmp_path: Path) -> None:
         await pilot.pause(0.05)
     events = read_recording(out)  # canonical (no run_trace_event wrapper)
     assert events and events[0].type == "task_started"
+
+
+# --- time-travel scrubber (017) ---------------------------------------------
+
+
+def _tasks_stream(n: int) -> MemorySource:
+    return MemorySource(
+        [
+            {
+                "version": "1",
+                "event_id": f"e{i}",
+                "run_id": "r",
+                "timestamp": "2026-06-14T10:00:00Z",
+                "type": "task_started",
+                "scope": {"task_id": f"t{i}"},
+                "payload": {"name": f"task {i}"},
+            }
+            for i in range(n)
+        ]
+    )
+
+
+async def test_scrub_steps_through_history() -> None:
+    from intui.kit import TaskCounterChip
+
+    app = build_console(_tasks_stream(4))
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        chip = app.query_one(TaskCounterChip)
+        assert "/ 4 tasks" in chip.header_text()
+
+        app.action_scrub_toggle()  # pause at 4
+        await pilot.pause(0.05)
+        assert "/ 4 tasks" in chip.header_text()
+
+        app.action_scrub_back()  # -> 3
+        await pilot.pause(0.05)
+        assert "/ 3 tasks" in chip.header_text()
+        assert app._timeline.position(len(app.store.events)) == 3
+
+        app.action_scrub_start()  # -> 0
+        await pilot.pause(0.05)
+        assert "no tasks" in chip.header_text()
+
+        app.action_scrub_live()  # -> latest
+        await pilot.pause(0.05)
+        assert "/ 4 tasks" in chip.header_text()
+
+
+async def test_scrub_holds_while_live_grows() -> None:
+    from datetime import UTC, datetime
+
+    from intui.events import Event, Scope
+    from intui.kit import TaskCounterChip
+
+    app = build_console(_tasks_stream(2))
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        chip = app.query_one(TaskCounterChip)
+
+        app.action_scrub_back()  # pause at 1
+        await pilot.pause(0.05)
+        assert "/ 1 tasks" in chip.header_text()
+
+        # more events arrive after we paused (simulate a growing live stream)
+        for i in range(2, 5):
+            app.store.ingest(
+                Event(
+                    version="1",
+                    event_id=f"x{i}",
+                    run_id="r",
+                    timestamp=datetime(2026, 6, 14, tzinfo=UTC),
+                    type="task_started",
+                    scope=Scope(task_id=f"t{i}"),
+                )
+            )
+        await pilot.pause(0.05)
+        assert "/ 1 tasks" in chip.header_text()  # held view stays frozen
+        assert len(app.store.events) == 5 and app._timeline.position(5) == 1
+
+        app.action_scrub_live()  # resume -> latest (5)
+        await pilot.pause(0.05)
+        assert "/ 5 tasks" in chip.header_text()
