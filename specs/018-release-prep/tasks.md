@@ -48,7 +48,7 @@ verification, release. Local prep first; outward-facing steps gated last.
 
 - [x] **T010** Commit + `git merge --no-ff` `018-release-prep` into `main`.
 - [x] **T011** Tag `v1.0.0` on `main`.
-- [ ] **T012** **[GATED]** Create/confirm the GitHub repo
+- [x] **T012** **[GATED]** Create/confirm the GitHub repo
       `stocklidevs/in-tui-tion`; `git remote add origin …`; push `main` + tags.
       (Maintainer creates the repo / supplies push auth.)
 - [ ] **T013** **[GATED]** TestPyPI dry-run: `uv publish --publish-url
