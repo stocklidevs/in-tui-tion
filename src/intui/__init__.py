@@ -37,7 +37,7 @@ from intui.theming import (
 )
 from intui.viewmodels import HealthView, Selector, health_view, selector
 
-__version__ = "0.17.0"
+__version__ = "1.0.0"
 
 __all__ = [
     "ConfirmationFlow",
