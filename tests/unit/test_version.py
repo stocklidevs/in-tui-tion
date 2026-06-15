@@ -13,7 +13,7 @@ def test_version_matches_distribution_metadata() -> None:
     # hatchling reads __version__ from the module, so the installed
     # distribution metadata must equal it (single source).
     try:
-        dist_version = importlib.metadata.version("in-tui-tion")
+        dist_version = importlib.metadata.version("intui")
     except importlib.metadata.PackageNotFoundError:
         import pytest
 

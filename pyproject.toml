@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "in-tui-tion"
+name = "intui"
 dynamic = ["version"]
 description = "A library for building rich, modern, first-class terminal user interfaces."
 readme = "README.md"

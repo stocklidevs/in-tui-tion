@@ -7,7 +7,7 @@ usage sparkline.
 ## Run it
 
 ```sh
-pip install "in-tui-tion[metrics]"      # adds psutil
+pip install "intui[metrics]"      # adds psutil
 uv run python -m examples.process_monitor
 ```
 

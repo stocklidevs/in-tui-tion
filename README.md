@@ -1,7 +1,7 @@
 # in-TUI-tion
 
-[![PyPI version](https://img.shields.io/pypi/v/in-tui-tion.svg)](https://pypi.org/project/in-tui-tion/)
-[![Python versions](https://img.shields.io/pypi/pyversions/in-tui-tion.svg)](https://pypi.org/project/in-tui-tion/)
+[![PyPI version](https://img.shields.io/pypi/v/intui.svg)](https://pypi.org/project/intui/)
+[![Python versions](https://img.shields.io/pypi/pyversions/intui.svg)](https://pypi.org/project/intui/)
 [![CI](https://github.com/stocklidevs/in-tui-tion/actions/workflows/ci.yml/badge.svg)](https://github.com/stocklidevs/in-tui-tion/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Types: mypy](https://img.shields.io/badge/types-mypy-blue.svg)](https://mypy-lang.org/)
@@ -30,8 +30,8 @@ your tool -> event stream -> reducer/state store -> view models -> widgets
 ## Install
 
 ```sh
-pip install in-tui-tion                 # or: uv add in-tui-tion
-pip install "in-tui-tion[metrics]"      # + psutil, for process metrics
+pip install intui                 # or: uv add intui
+pip install "intui[metrics]"      # + psutil, for process metrics
 ```
 
 Python 3.11+, a modern terminal, fully typed (`py.typed`).

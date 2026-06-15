@@ -23,7 +23,7 @@ def _load_psutil() -> Any:
         import psutil  # type: ignore[import-untyped]
     except ImportError as exc:  # pragma: no cover - exercised via monkeypatch
         raise RuntimeError(
-            "process metrics need psutil — install the extra: pip install 'in-tui-tion[metrics]'"
+            "process metrics need psutil — install the extra: pip install 'intui[metrics]'"
         ) from exc
     return psutil
 

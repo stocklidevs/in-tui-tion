@@ -5,7 +5,7 @@ Two ways to use in-TUI-tion. Pick the one that matches you.
 ## Install
 
 ```sh
-pip install in-tui-tion        # or: uv add in-tui-tion
+pip install intui        # or: uv add intui
 ```
 
 Requires Python 3.11+ and a modern terminal (Windows Terminal, macOS
@@ -107,7 +107,7 @@ saves as canonical — replays with no adapter). See the
 ### Watch a command's resources
 
 ```sh
-pip install "in-tui-tion[metrics]"            # adds psutil
+pip install "intui[metrics]"            # adds psutil
 intui watch --metrics -- python build.py      # press `m` for CPU/memory/status
 ```
 

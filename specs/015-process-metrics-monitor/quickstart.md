@@ -5,7 +5,7 @@ Run a command and watch its resources — status, duration, CPU, memory, sparkli
 ## Install the extra
 
 ```sh
-pip install "in-tui-tion[metrics]"     # adds psutil
+pip install "intui[metrics]"     # adds psutil
 ```
 
 ## Watch a command live
@@ -43,7 +43,7 @@ rec.metric_sample(cpu_percent=42.0, rss_bytes=53_400_000, elapsed_ms=1200)
 ## Notes
 
 - `psutil` is an **optional extra**; without it the monitor raises a clear
-  "install in-tui-tion[metrics]" error.
+  "install intui[metrics]" error.
 - v1 measures the spawned process itself (summing child processes is deferred).
 - The command **label** is sanitized to a basename and redacted by default — no
   host paths leak (Principle VI).

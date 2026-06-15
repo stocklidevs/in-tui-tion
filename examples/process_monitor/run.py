@@ -4,7 +4,7 @@ Run it::
 
     uv run python -m examples.process_monitor      # press `m` for the metrics view
 
-Needs the metrics extra (``pip install 'in-tui-tion[metrics]'``). Equivalent CLI::
+Needs the metrics extra (``pip install 'intui[metrics]'``). Equivalent CLI::
 
     intui watch --metrics -- python -c "<workload>"
 """

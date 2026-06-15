@@ -51,7 +51,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--metrics",
         action="store_true",
         help="watch a command's resources (CPU/memory) instead of its stdout "
-        "(use with `-- <command>`; needs in-tui-tion[metrics])",
+        "(use with `-- <command>`; needs intui[metrics])",
     )
     parser.add_argument(
         "--follow",

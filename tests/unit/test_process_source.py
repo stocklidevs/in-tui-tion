@@ -47,5 +47,5 @@ def test_missing_psutil_raises_clear_error(monkeypatch: pytest.MonkeyPatch) -> N
         async for _ in source:
             pass
 
-    with pytest.raises(RuntimeError, match=r"in-tui-tion\[metrics\]"):
+    with pytest.raises(RuntimeError, match=r"intui\[metrics\]"):
         asyncio.run(drive())
