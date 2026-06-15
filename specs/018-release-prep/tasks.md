@@ -46,8 +46,8 @@ verification, release. Local prep first; outward-facing steps gated last.
 
 ## Phase 5 — Release (commit, merge, GitHub, PyPI) — outward-facing gated
 
-- [ ] **T010** Commit + `git merge --no-ff` `018-release-prep` into `main`.
-- [ ] **T011** Tag `v1.0.0` on `main`.
+- [x] **T010** Commit + `git merge --no-ff` `018-release-prep` into `main`.
+- [x] **T011** Tag `v1.0.0` on `main`.
 - [ ] **T012** **[GATED]** Create/confirm the GitHub repo
       `stocklidevs/in-tui-tion`; `git remote add origin …`; push `main` + tags.
       (Maintainer creates the repo / supplies push auth.)
