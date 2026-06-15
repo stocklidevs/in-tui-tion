@@ -19,7 +19,7 @@ UNIFIED = (
 )
 
 
-def diff_event(eid: str = "d1") -> Event:
+def diff_event(eid: str = "d1", unified: str = UNIFIED) -> Event:
     return Event(
         version="1",
         event_id=eid,
@@ -27,8 +27,12 @@ def diff_event(eid: str = "d1") -> Event:
         timestamp=datetime(2026, 6, 13, tzinfo=UTC),
         type="diff_ready",
         scope=Scope(),
-        payload={"title": "Changes", "unified": UNIFIED},
+        payload={"title": "Changes", "unified": unified},
     )
+
+
+UNIFIED_A = "--- a/src/a.py\n+++ b/src/a.py\n@@ -0,0 +1 @@\n+a = 1\n"
+UNIFIED_B = "--- a/src/b.py\n+++ b/src/b.py\n@@ -0,0 +1 @@\n+b = 2\n"
 
 
 class DiffApp(IntuiApp):
@@ -120,6 +124,22 @@ async def test_unsafe_mode_shows_full_path() -> None:
         await pilot.pause(0.05)
         rows = " ".join(app.viewer.file_rows())
         assert "secret" in rows
+
+
+async def test_incremental_diffs_growing_file_set_no_duplicate_ids() -> None:
+    # Producers that stream one file at a time (e.g. IntentForge) grow the file
+    # set across events, rebuilding the list while the previous one is still
+    # being torn down by the async ListView.clear(). Item ids must not collide.
+    app, store = build()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        store.ingest(diff_event("d1", UNIFIED_A))
+        await pilot.pause(0.05)
+        store.ingest(diff_event("d2", UNIFIED_B))  # adds a second file
+        await pilot.pause(0.05)
+        rows = app.viewer.file_rows()
+        assert len(rows) == 2
+        assert any("a.py" in r for r in rows) and any("b.py" in r for r in rows)
 
 
 async def test_selection_preserved_across_update() -> None:

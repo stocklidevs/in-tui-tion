@@ -42,6 +42,10 @@ class DiffViewer(BoundContainer):
         self._view = DiffView()
         self._selected: str | None = None
         self._paths: list[str] = []
+        # Bumped each rebuild so freshly mounted item ids never collide with the
+        # previous generation while ListView.clear() (async) is still tearing it
+        # down — otherwise an incremental multi-file diff raises DuplicateIds.
+        self._rebuild_gen = 0
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -63,23 +67,27 @@ class DiffViewer(BoundContainer):
     def _rebuild_list(self) -> None:
         listview = self.query_one("#diff-files", ListView)
         listview.clear()
+        self._rebuild_gen += 1
+        gen = self._rebuild_gen
         if not self._view.files:
-            listview.append(ListItem(Static("no changes"), id="diff-empty"))
+            listview.append(ListItem(Static("no changes"), id=f"diff_empty_{gen}"))
             return
         for index, row in enumerate(self._view.files):
             if row.no_text_diff:
                 label = f"{row.path}  (no text diff)"
             else:
                 label = f"{row.path}  (+{row.added} -{row.removed})"
-            # Key by index, not path: redaction can collapse distinct paths to
-            # the same marker, which would otherwise duplicate widget IDs.
-            listview.append(ListItem(Static(label), id=f"file_{index}"))
+            # Key by generation+index, not path: redaction can collapse distinct
+            # paths to the same marker (duplicate ids), and the generation prefix
+            # avoids colliding with the previous list during the async clear().
+            listview.append(ListItem(Static(label), id=f"file_{gen}_{index}"))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         item_id = event.item.id or ""
         if item_id.startswith("file_"):
             try:
-                index = int(item_id.removeprefix("file_"))
+                # id is "file_{gen}_{index}"; the trailing segment is the index.
+                index = int(item_id.rsplit("_", 1)[-1])
             except ValueError:
                 return
             if 0 <= index < len(self._paths):

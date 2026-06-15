@@ -4,6 +4,16 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-06-14
+
+### Fixed
+
+- **DiffViewer** — streaming diffs one file at a time (e.g. an IntentForge run
+  emitting one `file_diff` per file) no longer raises
+  `textual._node_list.DuplicateIds`. `ListView.clear()` is asynchronous, so a
+  rebuilt list briefly coexisted with the previous one; file-row ids are now
+  keyed by a per-rebuild generation so they can never collide during the clear.
+
 ## [1.0.0] - 2026-06-14
 
 First stable release. The full path from "an event stream" to "a rich,
