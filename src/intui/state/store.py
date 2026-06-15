@@ -38,6 +38,24 @@ class Store:
         """The accepted events, in order (read-only) — e.g. to record a run."""
         return self._stream.events
 
+    def snapshot_at(self, index: int) -> Snapshot:
+        """Reconstruct the snapshot after the first ``index`` accepted events.
+
+        Pure time-travel: folds the reducer over ``events[:index]`` from its
+        initial state, mirroring live per-event isolation (an event whose
+        reduction raises is skipped, as it was live). Clamped to
+        ``[0, len(events)]``. Does NOT mutate the live snapshot or stream.
+        """
+        events = self._stream.events
+        n = max(0, min(index, len(events)))
+        snapshot = self._reducer.initial()
+        for event in events[:n]:
+            try:
+                snapshot = self._reducer(snapshot, event)
+            except Exception:  # noqa: BLE001 - same isolation boundary as ingest
+                continue
+        return snapshot.with_health(self._stream.health)
+
     def subscribe(self, callback: Subscriber) -> Unsubscribe:
         self._subscribers.append(callback)
 

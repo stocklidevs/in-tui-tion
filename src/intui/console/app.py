@@ -15,8 +15,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Footer, Header, Label
+from textual.widgets import Footer, Header, Label, Static
 
 from intui.actions import Intent
 from intui.app import IntuiApp
@@ -55,7 +56,7 @@ from intui.kit.state import (
     view_slice,
     workspace_slice,
 )
-from intui.state import Snapshot, Store, compose_reducers
+from intui.state import Snapshot, Store, Timeline, compose_reducers
 from intui.viewmodels import selector
 
 VIEWS = ("tasks", "lanes", "files", "diff", "evidence", "metrics")
@@ -88,6 +89,11 @@ class ConsoleApp(IntuiApp):
         ("q", "quit", "Quit"),
         ("ctrl+p", "palette", "Commands"),
         ("ctrl+s", "record", "Save run"),
+        ("space", "scrub_toggle", "Pause/Live"),
+        Binding("comma", "scrub_back", "Step back", show=False),
+        Binding("full_stop", "scrub_forward", "Step fwd", show=False),
+        Binding("home", "scrub_start", "To start", show=False),
+        Binding("end", "scrub_live", "To live", show=False),
     ]
     CSS = """
     /* Header and Footer self-dock; everything else flows top-to-bottom. */
@@ -98,6 +104,7 @@ class ConsoleApp(IntuiApp):
     .col-title { text-style: bold; color: $text-muted; }
     EvidencePanel { height: auto; }
     CommandBar { height: 1; background: $panel; }
+    #scrub-bar { height: 1; padding: 0 1; color: $text-muted; }
     """
 
     def __init__(
@@ -112,6 +119,7 @@ class ConsoleApp(IntuiApp):
         self._public_safe = public_safe
         self._sweep_seconds = sweep_seconds
         self._file_actions = file_actions
+        self._timeline = Timeline()  # starts live (follow the end)
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -135,11 +143,56 @@ class ConsoleApp(IntuiApp):
                     "metrics": MetricsPanel(metrics_view(public_safe=self._public_safe)),
                 },
             )
+        yield Static(id="scrub-bar")
         yield CommandBar(_command_registry())
         yield Footer()
 
+    def on_mount(self) -> None:
+        super().on_mount()
+        # Keep the scrub status fresh as events arrive (esp. the total while
+        # paused); the held view itself stays frozen via the bridge.
+        self.store.subscribe(lambda _snapshot: self._refresh_scrub_bar())
+        self._refresh_scrub_bar()
+
     def action_palette(self) -> None:
         self.open_command_palette(_command_registry())
+
+    # --- Time-travel scrubber -----------------------------------------------
+
+    def _apply_scrub(self) -> None:
+        total = len(self.store.events)
+        if self._timeline.live:
+            self.bridge.release()
+        else:
+            self.bridge.hold(self.store.snapshot_at(self._timeline.position(total)))
+        self._refresh_scrub_bar()
+
+    def _refresh_scrub_bar(self) -> None:
+        try:
+            bar = self.query_one("#scrub-bar", Static)
+        except Exception:  # noqa: BLE001 - not mounted yet
+            return
+        bar.update(self._timeline.label(len(self.store.events)))
+
+    def action_scrub_toggle(self) -> None:
+        self._timeline = self._timeline.toggle(len(self.store.events))
+        self._apply_scrub()
+
+    def action_scrub_back(self) -> None:
+        self._timeline = self._timeline.step(-1, len(self.store.events))
+        self._apply_scrub()
+
+    def action_scrub_forward(self) -> None:
+        self._timeline = self._timeline.step(1, len(self.store.events))
+        self._apply_scrub()
+
+    def action_scrub_start(self) -> None:
+        self._timeline = self._timeline.to_start()
+        self._apply_scrub()
+
+    def action_scrub_live(self) -> None:
+        self._timeline = self._timeline.to_end()
+        self._apply_scrub()
 
     def _record_path(self) -> Path:
         stamp = datetime.now(tz=UTC).strftime("%Y%m%d-%H%M%S")

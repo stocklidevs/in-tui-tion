@@ -54,6 +54,10 @@ intui watch --metrics -- python build.py      # watch a command's CPU/memory
 intui watch --follow run.jsonl                # tail a growing stream (ctrl+s saves)
 ```
 
+In the console: `space` pause/resume, `,`/`.` step back/forward, `home`/`end`
+rewind/live — **time-travel** through any run (every panel shows the state as it
+was). `ctrl+s` saves the run to a replayable file.
+
 …and produce that stream from your own tool in a few lines — no JSON by hand:
 
 ```python

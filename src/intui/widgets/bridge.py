@@ -27,6 +27,7 @@ class StoreBridge:
         self._app = app
         self._widgets: list[BoundWidget] = []
         self._latest: Snapshot = store.snapshot
+        self._held: Snapshot | None = None
         self._flush_scheduled = False
         self._min_interval = 1.0 / max_fps
         self._last_flush = 0.0
@@ -34,7 +35,26 @@ class StoreBridge:
 
     def register(self, widget: BoundWidget) -> None:
         self._widgets.append(widget)
-        widget.refresh_from(self._latest)
+        widget.refresh_from(self._held if self._held is not None else self._latest)
+
+    def hold(self, snapshot: Snapshot) -> None:
+        """Render a held (historical) snapshot and freeze live flushing.
+
+        Live publishes keep updating the tracked latest so :meth:`release` is
+        immediate; the rendered view stays at ``snapshot`` until released.
+        """
+        self._held = snapshot
+        self._render_now()
+
+    def release(self) -> None:
+        """Resume rendering the latest live snapshot."""
+        self._held = None
+        self._render_now()
+
+    def _render_now(self) -> None:
+        target = self._held if self._held is not None else self._latest
+        for widget in self._widgets:
+            widget.refresh_from(target)
 
     def unregister(self, widget: BoundWidget) -> None:
         if widget in self._widgets:
@@ -46,6 +66,8 @@ class StoreBridge:
 
     def _on_snapshot(self, snapshot: Snapshot) -> None:
         self._latest = snapshot
+        if self._held is not None:
+            return  # view is frozen on a held snapshot; track latest only
         if self._flush_scheduled:
             # Coalesce: any number of publishes before the pending flush
             # runs results in a single refresh against the latest snapshot.
@@ -60,5 +82,6 @@ class StoreBridge:
     def _flush(self) -> None:
         self._flush_scheduled = False
         self._last_flush = monotonic()
+        target = self._held if self._held is not None else self._latest
         for widget in self._widgets:
-            widget.refresh_from(self._latest)
+            widget.refresh_from(target)
