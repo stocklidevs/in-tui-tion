@@ -116,6 +116,26 @@ async def _aiter_text_lines(
             yield line
 
 
+async def _aiter_followed_lines(path: Path | str, poll_interval: float) -> AsyncIterator[str]:
+    """Tail a file: yield existing lines, then keep yielding appended ones.
+
+    A line appended without its trailing newline is buffered until the newline
+    arrives, so it is yielded exactly once. Never ends (the stream stays live);
+    closes the handle when the consuming task is cancelled.
+    """
+    with Path(path).open("r", encoding="utf-8") as f:
+        buffer = ""
+        while True:
+            chunk = f.readline()
+            if not chunk:
+                await asyncio.sleep(poll_interval)
+                continue
+            buffer += chunk
+            if buffer.endswith("\n"):
+                yield buffer
+                buffer = ""
+
+
 class NdjsonStreamSource:
     """An :class:`EventSource` over newline-delimited JSON.
 
@@ -133,14 +153,23 @@ class NdjsonStreamSource:
         *,
         event_record_types: tuple[str, ...] = (),
         rate: float | None = None,
+        follow: bool = False,
+        poll_interval: float = 0.25,
     ) -> None:
         self._lines = lines
         self._event_record_types = event_record_types
         self._delay = None if rate is None else 1.0 / rate
+        # Follow (tail) only applies to a file path; other inputs are finite.
+        self._follow = follow and isinstance(lines, (Path, str))
+        self._poll_interval = poll_interval
 
     async def __aiter__(self) -> AsyncIterator[Mapping[str, Any]]:
+        if self._follow:
+            source = _aiter_followed_lines(self._lines, self._poll_interval)  # type: ignore[arg-type]
+        else:
+            source = _aiter_text_lines(self._lines)
         line_number = 0
-        async for line in _aiter_text_lines(self._lines):
+        async for line in source:
             line_number += 1
             decoded = _decode_ndjson_line(line, line_number, self._event_record_types)
             if decoded is None:

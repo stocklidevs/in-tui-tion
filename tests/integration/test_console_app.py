@@ -235,3 +235,73 @@ async def test_metrics_view_reachable_and_shows_panel() -> None:
         panel = app.query_one(MetricsPanel)
         assert panel.status() == "passed"
         assert "build.py" in panel.summary_text()
+
+
+# --- record (016) ------------------------------------------------------------
+
+
+def _task_stream() -> MemorySource:
+    return MemorySource(
+        [
+            {
+                "version": "1",
+                "event_id": "t1",
+                "run_id": "r",
+                "timestamp": "2026-06-14T10:00:00Z",
+                "type": "task_started",
+                "scope": {"task_id": "build"},
+                "payload": {"name": "Build"},
+            },
+            {
+                "version": "1",
+                "event_id": "t2",
+                "run_id": "r",
+                "timestamp": "2026-06-14T10:00:01Z",
+                "type": "task_completed",
+                "scope": {"task_id": "build"},
+                "status": "passed",
+            },
+        ]
+    )
+
+
+async def test_record_writes_replayable_canonical_file(tmp_path: Path) -> None:
+    from intui.events import read_recording
+
+    out = tmp_path / "rec.jsonl"
+    app = build_console(_task_stream())
+    app._record_path = lambda: out  # type: ignore[method-assign]
+    async with app.run_test(size=(100, 30)) as pilot:
+        await _drain(app, pilot)
+        await pilot.press("ctrl+s")
+        await pilot.pause(0.05)
+    assert out.is_file()
+    events = read_recording(out)
+    assert [e.event_id for e in events] == ["t1", "t2"]
+
+    # round-trip: replay the recording into a fresh console -> same task state
+    replay = build_console(NdjsonStreamSource(out))
+    async with replay.run_test(size=(100, 30)) as pilot:
+        await _drain(replay, pilot)
+        assert {t.task_id for t in replay.store.snapshot.slice("taskboard").tasks.values()} == {
+            "build"
+        }
+
+
+async def test_record_of_adapted_source_is_canonical(tmp_path: Path) -> None:
+    from intui.adapters import IntentForgeSource
+    from intui.events import read_recording
+
+    out = tmp_path / "rec.jsonl"
+    if_lines = [
+        '{"type":"run_trace_event","event":{"sequence":1,"name":"case_started",'
+        '"payload":{"case_id":"c1"}}}'
+    ]
+    app = build_console(IntentForgeSource(if_lines))
+    app._record_path = lambda: out  # type: ignore[method-assign]
+    async with app.run_test(size=(100, 30)) as pilot:
+        await _drain(app, pilot)
+        await pilot.press("ctrl+s")
+        await pilot.pause(0.05)
+    events = read_recording(out)  # canonical (no run_trace_event wrapper)
+    assert events and events[0].type == "task_started"

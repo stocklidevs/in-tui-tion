@@ -86,6 +86,17 @@ for issue in validate_stream("run.jsonl", known_types=KNOWN_EVENT_TYPES):
     print(issue.line, issue.severity, issue.reason)
 ```
 
+### Follow a growing file, and record what you watch
+
+```sh
+intui watch --follow run.jsonl     # tail a file another process is writing
+```
+
+Press `ctrl+s` in the console to save the run so far to a canonical
+`intui-recording-<timestamp>.jsonl` you can replay later (even an adapted run
+saves as canonical — replays with no adapter). See the
+[follow & record quickstart](../specs/016-follow-and-record/quickstart.md).
+
 ### Watch a command's resources
 
 ```sh

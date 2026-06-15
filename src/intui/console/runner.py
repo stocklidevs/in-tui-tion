@@ -12,9 +12,13 @@ from intui.events import EventSource, NdjsonStreamSource
 DEFAULT_RECORD_TYPES = ("run_trace_event",)
 
 
-def _as_source(source: EventSource | Path | str, *, rate: float | None) -> EventSource:
+def _as_source(
+    source: EventSource | Path | str, *, rate: float | None, follow: bool
+) -> EventSource:
     if isinstance(source, (Path, str)):
-        return NdjsonStreamSource(source, event_record_types=DEFAULT_RECORD_TYPES, rate=rate)
+        return NdjsonStreamSource(
+            source, event_record_types=DEFAULT_RECORD_TYPES, rate=rate, follow=follow
+        )
     return source
 
 
@@ -23,13 +27,15 @@ def watch(
     *,
     public_safe: bool = True,
     rate: float | None = None,
+    follow: bool = False,
 ) -> None:
     """Render a console from a stream file path or any :class:`EventSource`.
 
     A path is replayed as ndjson (wrapped records unwrapped, non-event records
-    ignored); an :class:`EventSource` is used directly. Public-safe by default.
+    ignored); ``follow=True`` tails a growing file. An :class:`EventSource` is
+    used directly. Public-safe by default.
     """
-    app = build_app(source, public_safe=public_safe, rate=rate)
+    app = build_app(source, public_safe=public_safe, rate=rate, follow=follow)
     app.run()
 
 
@@ -38,6 +44,7 @@ def build_app(
     *,
     public_safe: bool = True,
     rate: float | None = None,
+    follow: bool = False,
 ) -> ConsoleApp:
     """Build (but do not run) the console — the testable core of :func:`watch`."""
-    return build_console(_as_source(source, rate=rate), public_safe=public_safe)
+    return build_console(_as_source(source, rate=rate, follow=follow), public_safe=public_safe)
