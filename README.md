@@ -1,5 +1,13 @@
 # in-TUI-tion
 
+[![PyPI version](https://img.shields.io/pypi/v/in-tui-tion.svg)](https://pypi.org/project/in-tui-tion/)
+[![Python versions](https://img.shields.io/pypi/pyversions/in-tui-tion.svg)](https://pypi.org/project/in-tui-tion/)
+[![CI](https://github.com/stocklidevs/in-tui-tion/actions/workflows/ci.yml/badge.svg)](https://github.com/stocklidevs/in-tui-tion/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Types: mypy](https://img.shields.io/badge/types-mypy-blue.svg)](https://mypy-lang.org/)
+[![Linting: Ruff](https://img.shields.io/badge/lint-ruff-261230.svg)](https://github.com/astral-sh/ruff)
+[![Built with Textual](https://img.shields.io/badge/built%20with-Textual-5a4fcf.svg)](https://textual.textualize.io/)
+
 **Point it at an event stream, get a rich terminal console — with zero UI code.**
 
 in-TUI-tion is a Python library for building rich, first-class terminal user
@@ -79,6 +87,23 @@ with no adapter.
 Producers whose event names differ are normalized by a thin **adapter**; the
 canonical vocabulary every producer targets is the single source of truth in
 [docs/event-stream-contract.md](docs/event-stream-contract.md).
+
+## Gallery
+
+<table>
+<tr>
+<td width="50%"><b>Tasks &amp; work items</b><br><img src="https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/tasks.svg" alt="tasks view"></td>
+<td width="50%"><b>Workspace file tree</b><br><img src="https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/files.svg" alt="file tree view"></td>
+</tr>
+<tr>
+<td><b>Diff viewer</b><br><img src="https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/diff.svg" alt="diff view"></td>
+<td><b>Process metrics</b><br><img src="https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/metrics.svg" alt="metrics view"></td>
+</tr>
+<tr>
+<td><b>Evidence panel</b><br><img src="https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/evidence.svg" alt="evidence view"></td>
+<td><b>Time-travel scrubber</b><br><img src="https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/scrubber.svg" alt="time-travel scrubber (paused)"></td>
+</tr>
+</table>
 
 ## Architecture
 
