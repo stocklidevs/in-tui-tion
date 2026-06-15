@@ -131,3 +131,22 @@ def test_metrics_without_command_is_error(capsys: pytest.CaptureFixture[str]) ->
     rc = cli.main(["watch", "--metrics", "run.jsonl"])
     assert rc != 0
     assert "metrics" in capsys.readouterr().err.lower()
+
+
+def test_follow_flag_sets_follow_on_source(
+    tmp_path: Path, _no_terminal: list[dict[str, Any]]
+) -> None:
+    from intui.events import NdjsonStreamSource
+
+    rc = cli.main(["watch", "--follow", str(_stream_file(tmp_path))])
+    assert rc == 0
+    src = _no_terminal[0]["source"]
+    assert isinstance(src, NdjsonStreamSource) and src._follow is True
+
+
+def test_follow_with_command_is_error(capsys: pytest.CaptureFixture[str]) -> None:
+    import sys
+
+    rc = cli.main(["watch", "--follow", "--", sys.executable, "-c", "pass"])
+    assert rc != 0
+    assert "follow" in capsys.readouterr().err.lower()

@@ -54,6 +54,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "(use with `-- <command>`; needs in-tui-tion[metrics])",
     )
     parser.add_argument(
+        "--follow",
+        action="store_true",
+        help="tail a growing stream file (keep reading appended lines)",
+    )
+    parser.add_argument(
         "target",
         nargs="?",
         help="a .jsonl stream file (or use `-- <command>` to spawn a producer)",
@@ -91,6 +96,10 @@ def main(argv: list[str] | None = None) -> int:
     intentforge = ns.adapter == "intentforge"
     source: EventSource
     if cmd is not None:
+        if ns.follow:
+            return _fail(
+                "--follow is for a stream file, not a command (a command is already live)"
+            )
         if not cmd:
             return _fail("no command given after `--`")
         if shutil.which(cmd[0]) is None and not Path(cmd[0]).is_file():
@@ -114,7 +123,9 @@ def main(argv: list[str] | None = None) -> int:
         source = (
             IntentForgeSource(path)
             if intentforge
-            else NdjsonStreamSource(path, event_record_types=DEFAULT_RECORD_TYPES, rate=ns.rate)
+            else NdjsonStreamSource(
+                path, event_record_types=DEFAULT_RECORD_TYPES, rate=ns.rate, follow=ns.follow
+            )
         )
 
     app = build_console(source, public_safe=ns.public_safe)

@@ -51,6 +51,7 @@ intui watch run.jsonl          # replay a captured stream
 intui watch -- my-agent --json # spawn a producer and watch it live
 intui watch --adapter intentforge run.ndjson  # normalize an IntentForge run
 intui watch --metrics -- python build.py      # watch a command's CPU/memory
+intui watch --follow run.jsonl                # tail a growing stream (ctrl+s saves)
 ```
 
 …and produce that stream from your own tool in a few lines — no JSON by hand:

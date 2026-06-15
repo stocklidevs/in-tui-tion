@@ -4,6 +4,7 @@ surface malformed lines, accept a path and a (sync/async) line iterable."""
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 from collections.abc import AsyncIterator
 from pathlib import Path
@@ -84,3 +85,55 @@ def test_accepts_async_iterable() -> None:
 
     out = _drain(NdjsonStreamSource(agen()))
     assert [e["event_id"] for e in out] == ["e1", "e2"]
+
+
+# --- follow / tail (016) -----------------------------------------------------
+
+
+def _env(eid: str) -> dict[str, Any]:
+    return {**GOOD, "event_id": eid}
+
+
+def test_follow_tails_appended_lines(tmp_path: Path) -> None:
+    import json as _json
+
+    p = tmp_path / "run.jsonl"
+    p.write_text(_json.dumps(_env("e1")) + "\n" + _json.dumps(_env("e2")) + "\n", encoding="utf-8")
+
+    async def scenario() -> list[str]:
+        source = NdjsonStreamSource(p, follow=True, poll_interval=0.02)
+        seen: list[str] = []
+
+        async def consume() -> None:
+            async for ev in source:
+                seen.append(ev["event_id"])
+
+        task = asyncio.ensure_future(consume())
+        # initial two
+        for _ in range(50):
+            if len(seen) >= 2:
+                break
+            await asyncio.sleep(0.02)
+        # append two more, in one and then a partial+rest
+        with p.open("a", encoding="utf-8") as f:
+            f.write(_json.dumps(_env("e3")) + "\n")
+            f.flush()
+        await asyncio.sleep(0.05)
+        with p.open("a", encoding="utf-8") as f:
+            f.write(_json.dumps(_env("e4")))  # no newline yet (partial)
+            f.flush()
+        await asyncio.sleep(0.05)
+        with p.open("a", encoding="utf-8") as f:
+            f.write("\n")  # complete the partial line
+            f.flush()
+        for _ in range(50):
+            if len(seen) >= 4:
+                break
+            await asyncio.sleep(0.02)
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+        return seen
+
+    seen = asyncio.run(scenario())
+    assert seen == ["e1", "e2", "e3", "e4"]  # partial line parsed exactly once

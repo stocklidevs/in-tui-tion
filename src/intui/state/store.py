@@ -33,6 +33,11 @@ class Store:
     def snapshot(self) -> Snapshot:
         return self._snapshot
 
+    @property
+    def events(self) -> tuple[Event, ...]:
+        """The accepted events, in order (read-only) — e.g. to record a run."""
+        return self._stream.events
+
     def subscribe(self, callback: Subscriber) -> Unsubscribe:
         self._subscribers.append(callback)
 

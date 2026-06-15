@@ -12,6 +12,7 @@ the flagship *example*; this is the generic substrate.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalScroll
@@ -19,7 +20,7 @@ from textual.widgets import Footer, Header, Label
 
 from intui.actions import Intent
 from intui.app import IntuiApp
-from intui.events import Event, EventSource, Scope
+from intui.events import Event, EventSource, Scope, write_recording
 from intui.kit import (
     ActivityStrip,
     CommandBar,
@@ -83,7 +84,11 @@ class ConsoleApp(IntuiApp):
     """A zero-config console over the canonical event vocabulary."""
 
     TITLE = "in-TUI-tion · console"
-    BINDINGS = [("q", "quit", "Quit"), ("ctrl+p", "palette", "Commands")]
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+        ("ctrl+p", "palette", "Commands"),
+        ("ctrl+s", "record", "Save run"),
+    ]
     CSS = """
     /* Header and Footer self-dock; everything else flows top-to-bottom. */
     ActivityStrip { height: 1; padding: 0 1; background: $panel; }
@@ -135,6 +140,25 @@ class ConsoleApp(IntuiApp):
 
     def action_palette(self) -> None:
         self.open_command_palette(_command_registry())
+
+    def _record_path(self) -> Path:
+        stamp = datetime.now(tz=UTC).strftime("%Y%m%d-%H%M%S")
+        return Path(f"intui-recording-{stamp}.jsonl")
+
+    def action_record(self) -> None:
+        """Save the run seen so far to a canonical, replayable ``.jsonl``.
+
+        Writes the store's *accepted* events (canonical envelopes — no wrapper),
+        so the file replays with ``intui watch <file>`` and no adapter. A write
+        failure is reported, never fatal.
+        """
+        path = self._record_path()
+        try:
+            write_recording(path, self.store.events)
+        except OSError as exc:
+            self.notify(f"could not save: {exc}", severity="error", timeout=4.0)
+            return
+        self.notify(f"saved {len(self.store.events)} events → {path}", timeout=4.0)
 
     def _emit(self, type_: str, **payload: object) -> None:
         self.store.ingest(
