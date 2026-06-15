@@ -11,10 +11,21 @@ requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "stocklidevs" }]
-keywords = ["tui", "terminal", "textual", "console", "agent", "dashboard", "ui"]
+keywords = [
+    "tui",
+    "terminal",
+    "textual",
+    "console",
+    "agent",
+    "dashboard",
+    "event-sourcing",
+    "replay",
+    "ui",
+]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
+    "Framework :: AsyncIO",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
@@ -22,6 +33,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: User Interfaces",
     "Topic :: Terminals",
     "Typing :: Typed",
 ]
@@ -32,6 +44,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/stocklidevs/in-tui-tion"
 Repository = "https://github.com/stocklidevs/in-tui-tion"
+Issues = "https://github.com/stocklidevs/in-tui-tion/issues"
+Changelog = "https://github.com/stocklidevs/in-tui-tion/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/stocklidevs/in-tui-tion/blob/main/docs/README.md"
 
 [project.scripts]
 intui = "intui.console.cli:main"

@@ -1,103 +1,116 @@
 # in-TUI-tion
 
-A Python library for building rich, modern, first-class terminal user
-interfaces — structured state in, beautiful live UI out.
+**Point it at an event stream, get a rich terminal console — with zero UI code.**
 
-Applications describe facts as an **append-only event stream**; the library
-reduces them into **immutable state snapshots**, projects those into **view
-models**, and renders them through **widgets that update themselves**. User
-input flows back as **named intents** — the library never mutates your state.
-Recordings replay deterministically, so every UI behavior is testable without
-a terminal.
+in-TUI-tion is a Python library for building rich, first-class terminal user
+interfaces on top of [Textual](https://textual.textualize.io/). Your tool
+describes what happens as an **append-only event stream**; the library reduces it
+into **immutable state**, projects **view models**, and renders **self-updating
+widgets** — tasks, diffs, a file tree, evidence, resource metrics, a conversation,
+and a signature activity strip. User input flows back as **named intents**; the
+library never mutates your state, and every run **replays deterministically**, so
+you can even pause and rewind time.
+
+![the console showing a run's diff, tasks and activity strip](https://raw.githubusercontent.com/stocklidevs/in-tui-tion/main/docs/media/console.svg)
 
 ```text
-app adapter -> event stream -> reducer/state store -> view models
-    ^                                                      |
-    +------ intents <- user input <- widgets <-------------+
+your tool -> event stream -> reducer/state store -> view models -> widgets
+   ^                                                                   |
+   +---------- intents <- user input <- (the library never mutates) <--+
 ```
-
-## Layers
-
-1. **Core library** (`intui.events/state/viewmodels/actions/theming`) —
-   engine-free pipeline: envelopes, streams, reducers, snapshots, selectors,
-   intents, themes. Imports no terminal engine (enforced by lint + test).
-2. **Rendering layer** (`intui.widgets`, `intui.app`) — built on
-   [Textual](https://textual.textualize.io/): bound widgets/containers,
-   render-coalescing bridge, the Signal motion primitive, app shell with
-   confirmation flow.
-3. **Component kit** (`intui.kit`) — high-level, data-driven components: a
-   task counter chip, a two-level task tree, parallel lanes, command surfaces
-   (an always-visible command menu + a searchable command palette), inspect
-   components (a diff viewer + an evidence panel, public-safe by default), a
-   prompt input, a signature full-width activity strip, modes + a conversation
-   surface, and a central view router that points the main pane at a chosen
-   view — over a shared engine-free state model (`intui.kit.state`) with
-   ready-made reductions, a command registry, a unified-diff parser, and a
-   public-safety redactor.
-4. **Examples** (`examples/`) — first-class runnable demos of every feature.
 
 ## Install
 
 ```sh
-pip install in-tui-tion        # or: uv add in-tui-tion
+pip install in-tui-tion                 # or: uv add in-tui-tion
+pip install "in-tui-tion[metrics]"      # + psutil, for process metrics
 ```
 
-Python 3.11+, a modern terminal, inline types (`py.typed`).
+Python 3.11+, a modern terminal, fully typed (`py.typed`).
 
-Render a console from any compliant stream with **zero code**:
+## Watch a stream — zero code
 
 ```sh
-intui watch run.jsonl          # replay a captured stream
-intui watch -- my-agent --json # spawn a producer and watch it live
-intui watch --adapter intentforge run.ndjson  # normalize an IntentForge run
-intui watch --metrics -- python build.py      # watch a command's CPU/memory
-intui watch --follow run.jsonl                # tail a growing stream (ctrl+s saves)
+intui watch run.jsonl                          # replay a captured run
+intui watch -- my-agent --json                 # spawn a producer, watch it live
+intui watch --follow run.jsonl                 # tail a growing stream
+intui watch --metrics -- python build.py       # watch a command's CPU/memory
+intui watch --adapter intentforge run.ndjson   # normalize an IntentForge run
 ```
 
-In the console: `space` pause/resume, `,`/`.` step back/forward, `home`/`end`
-rewind/live — **time-travel** through any run (every panel shows the state as it
-was). `ctrl+s` saves the run to a replayable file.
+In the console: `t/l/f/d/e/m` switch views (tasks, lanes, files, diff, evidence,
+metrics) · `space ,/. home/end` **time-travel** (pause, step, rewind, resume) ·
+`ctrl+s` saves the run to a replayable file · `ctrl+p` the command palette.
 
-…and produce that stream from your own tool in a few lines — no JSON by hand:
+## Produce a stream — a few lines, no JSON by hand
 
 ```python
 from intui import run_recorder
+
 with run_recorder("run.ndjson") as rec, rec.run():
-    with rec.task("build", "Build the app"):
-        rec.diff("src/app.py", before=old, after=new)
+    with rec.task("build", "Build the app") as build:
+        with build.work_item("compile"):
+            rec.file_written("src/app.py", change_type="added")
+            rec.diff("src/app.py", before=old, after=new)
     rec.evidence(pass_rate="92%", certified="gold")
 ```
 
-## Quickstart
+Then `intui watch run.ndjson` (or pipe it live: `intui watch -- python my_tool.py`).
+The SDK emits the canonical
+[event-stream contract](docs/event-stream-contract.md), so the runner reads it
+with no adapter.
 
-Two paths — full guide in **[docs/quickstart.md](docs/quickstart.md)**:
+## What you get
 
-- **Stream-first** — emit events with the **Producer SDK** (`run_recorder`) or
-  as JSON lines per the **[event-stream contract](docs/event-stream-contract.md)**,
-  and the kit renders them.
-- **Build-in-code** — compose the kit yourself.
+| Capability | What it does |
+|---|---|
+| **Zero-config console** | `intui watch` / `watch()` / `ConsoleApp` render any compliant stream — file replay or a live subprocess. |
+| **Producer SDK** | `run_recorder` emits canonical events (tasks, work items, diffs, evidence, files, messages, metrics) in a few lines. |
+| **Task / lane views** | A counter chip, a nested task/work-item tree (parents inferred), and parallel lanes. |
+| **Diffs** | A changed-file list + green/red diff that **accumulates** across many `file_diff` events. |
+| **Workspace file tree** | A keyboard-navigable tree of the files a run produced; open/copy/delete surfaced as **intents** your app fulfills. |
+| **Evidence panel** | Labeled outcome metrics. |
+| **Process metrics** | `--metrics` spawns a command and shows status, duration, CPU, memory + sparklines (via `psutil`). |
+| **Time-travel scrubber** | Pause / step / rewind / resume — every panel shows the run *as it was* (it's just `reduce(events[:n])`). |
+| **Follow & record** | Tail a growing file (`--follow`); `ctrl+s` saves the run to a canonical, replayable `.jsonl`. |
+| **IntentForge adapter** | `--adapter intentforge` normalizes IF's run-trace stream into the canonical vocabulary. |
+| **Public-safe by default** | Diffs, evidence, and paths are redacted unless you opt out. |
 
-Run the examples from a checkout:
+Producers whose event names differ are normalized by a thin **adapter**; the
+canonical vocabulary every producer targets is the single source of truth in
+[docs/event-stream-contract.md](docs/event-stream-contract.md).
+
+## Architecture
+
+1. **Core** (`intui.events/state/viewmodels/actions/theming`, `intui.kit.state`,
+   `intui.adapters`) — the engine-free pipeline: envelopes, streams, reducers,
+   immutable snapshots, selectors, intents, themes, producer adapters. Imports no
+   terminal engine (enforced by lint + a layering test).
+2. **Rendering** (`intui.widgets`, `intui.app`) — Textual-based bound
+   widgets/containers, a render-coalescing bridge, the Signal motion primitive,
+   and the app shell with risky-action confirmation.
+3. **Kit** (`intui.kit`) — the high-level components above over a shared
+   engine-free state model.
+4. **Producer SDK** (`intui.emit`) and the **console runner** (`intui.console`).
+5. **Examples** (`examples/`) — first-class runnable demos of every feature.
+
+## Quickstart & examples
+
+Full guide: **[docs/quickstart.md](docs/quickstart.md)** · docs index:
+**[docs/README.md](docs/README.md)**.
 
 ```sh
 uv sync
-uv run python -m examples.operator_console  # the flagship: modes + whole kit
-uv run python -m examples.mission_control   # the component kit demo
-uv run python -m examples.hello_replay      # the foundation demo
-uv run pytest                               # headless test suite
+uv run python -m examples.operator_console     # the flagship: whole kit + modes
+uv run python -m examples.intentforge_console  # a real IntentForge run, adapted
+uv run python -m examples.emit_demo            # produce a stream with the SDK
+uv run python -m examples.process_monitor      # watch a command's resources
+uv run pytest                                  # headless test suite
 ```
-
-The **operator console** is the flagship — an agentic workbench with
-Plan/Build/Inspect/Review modes, a conversation surface, a live prompt you can
-type into, and the signature full-width KITT activity strip, composing every
-kit component over one recorded run. See
-[examples/operator_console/README.md](examples/operator_console/README.md).
-
-The canonical event vocabulary every producer targets lives in
-**[docs/event-stream-contract.md](docs/event-stream-contract.md)** (single
-source of truth).
 
 ## Project governance
 
 Spec-driven (GitHub Spec Kit): specs, plans, and tasks live under `specs/`;
-principles live in [.specify/memory/constitution.md](.specify/memory/constitution.md).
+principles live in
+[.specify/memory/constitution.md](.specify/memory/constitution.md). Changes:
+[CHANGELOG.md](CHANGELOG.md). Licensed under [MIT](LICENSE).
