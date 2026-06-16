@@ -93,6 +93,16 @@ In the console, `space` pauses/resumes, `,`/`.` step back/forward one event,
 *as it was* at that point (it's just `reduce(events[:n])`). See the
 [scrubber quickstart](../specs/017-time-travel-scrubber/quickstart.md).
 
+### Watch your pytest run
+
+```sh
+pytest --intui=run.jsonl     # the bundled plugin emits a stream as tests run
+intui watch run.jsonl        # tests as tasks/work items, failures, a summary
+```
+
+Inert unless you pass `--intui`. See the
+[pytest quickstart](../specs/019-pytest-plugin/quickstart.md).
+
 ### Follow a growing file, and record what you watch
 
 ```sh
