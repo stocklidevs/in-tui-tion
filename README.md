@@ -82,6 +82,7 @@ with no adapter.
 | **Time-travel scrubber** | Pause / step / rewind / resume — every panel shows the run *as it was* (it's just `reduce(events[:n])`). |
 | **Follow & record** | Tail a growing file (`--follow`); `ctrl+s` saves the run to a canonical, replayable `.jsonl`. |
 | **IntentForge adapter** | `--adapter intentforge` normalizes IF's run-trace stream into the canonical vocabulary. |
+| **pytest plugin** | `pytest --intui=run.jsonl` emits the stream as your suite runs — watch tests as a console (`intui watch`). |
 | **Public-safe by default** | Diffs, evidence, and paths are redacted unless you opt out. |
 
 Producers whose event names differ are normalized by a thin **adapter**; the
@@ -130,6 +131,7 @@ uv run python -m examples.operator_console     # the flagship: whole kit + modes
 uv run python -m examples.intentforge_console  # a real IntentForge run, adapted
 uv run python -m examples.emit_demo            # produce a stream with the SDK
 uv run python -m examples.process_monitor      # watch a command's resources
+pytest examples/pytest_console --intui=run.jsonl && intui watch run.jsonl  # tests as a console
 uv run pytest                                  # headless test suite
 ```
 

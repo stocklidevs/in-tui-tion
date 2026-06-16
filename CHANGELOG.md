@@ -4,6 +4,17 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-06-14
+
+### Added
+
+- **pytest plugin** — `pytest --intui[=PATH]` emits the canonical event stream as
+  a suite runs (modules as tasks, tests as work items, failures in the
+  conversation, a pass/fail/skip summary as evidence). Auto-discovered via the
+  `pytest11` entry point and **inert unless `--intui` is given**; adds no runtime
+  dependency. The output is ordinary canonical ndjson — `intui watch` /
+  `--follow` / scrub it with no adapter. The first producer integration.
+
 ## [1.0.1] - 2026-06-14
 
 ### Fixed

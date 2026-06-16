@@ -51,6 +51,9 @@ Documentation = "https://github.com/stocklidevs/in-tui-tion/blob/main/docs/READM
 [project.scripts]
 intui = "intui.console.cli:main"
 
+[project.entry-points.pytest11]
+intui = "intui.pytest_plugin"
+
 [project.optional-dependencies]
 metrics = ["psutil>=5"]
 

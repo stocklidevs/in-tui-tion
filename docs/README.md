@@ -22,6 +22,8 @@ Start here:
   `--follow` + `ctrl+s`.
 - [Time-travel scrubber](../specs/017-time-travel-scrubber/quickstart.md) —
   pause / step / rewind.
+- [pytest plugin](../specs/019-pytest-plugin/quickstart.md) — `pytest --intui`
+  → watch your test run.
 
 ## Reference
 
