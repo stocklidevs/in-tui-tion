@@ -89,6 +89,12 @@ from intui.kit.state.selectors import (
     taskboard_from,
     tree_view,
 )
+from intui.kit.state.timeline_feed import (
+    STATUS_GLYPH,
+    TimelineFeedView,
+    TimelineRow,
+    run_timeline_view,
+)
 from intui.kit.state.views import (
     VIEW_EVENT_TYPES,
     ViewEntry,
@@ -140,6 +146,7 @@ __all__ = [
     "TASKBOARD_EVENT_TYPES",
     "VIEW_EVENT_TYPES",
     "WORKSPACE_EVENT_TYPES",
+    "STATUS_GLYPH",
     "STATUS_PRESENTATION",
     "UNASSIGNED_KEY",
     "ArtifactStore",
@@ -184,6 +191,8 @@ __all__ = [
     "TaskBoardState",
     "TaskRow",
     "TaskView",
+    "TimelineFeedView",
+    "TimelineRow",
     "TreeView",
     "WorkItemView",
     "activity_style",
@@ -213,6 +222,7 @@ __all__ = [
     "redact",
     "run_status_reducer",
     "run_status_slice",
+    "run_timeline_view",
     "scan_workspace",
     "select_view_intent",
     "status_presentation",
