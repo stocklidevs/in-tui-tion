@@ -88,6 +88,55 @@ def test_summary_card_renders_bordered_with_metrics() -> None:
     assert any("passed 2" in ln for ln in bordered)
 
 
+def _three_row_view() -> TimelineFeedView:
+    return TimelineFeedView(
+        rows=(
+            TimelineRow(0, "task", "✓", "completed", "test_ok", "completed", ""),
+            TimelineRow(1, "failure", "✗", "failed", "test_bad", "failed", "w1", "assert 1 == 2"),
+            TimelineRow(2, "message", "›", "agent", "moving on", "", ""),
+        )
+    )
+
+
+def test_cursor_moves_clamp_and_escape_returns_to_follow() -> None:
+    tl = RunTimeline(run_timeline_view())
+    tl._view = _three_row_view()
+    assert tl.selected_index is None  # follow mode by default
+    tl.move_cursor(-1)  # entering selection starts at the latest row
+    assert tl.selected_index == 2
+    tl.move_cursor(-1)
+    assert tl.selected_index == 1
+    tl.move_cursor(-1)
+    tl.move_cursor(-1)  # clamps at the top
+    assert tl.selected_index == 0
+    tl.move_cursor(1)
+    assert tl.selected_index == 1
+    tl.clear_cursor()
+    assert tl.selected_index is None
+
+
+def test_row_line_map_accounts_for_callout_blanks() -> None:
+    tl = RunTimeline(run_timeline_view())
+    tl._view = _three_row_view()
+    text = tl.log_text()
+    lines = text.splitlines()
+    starts = tl.row_line_starts()
+    assert len(starts) == 3
+    assert "test_ok" in lines[starts[0]]
+    assert "test_bad" in lines[starts[1]]
+    assert "moving on" in lines[starts[2]]
+
+
+def test_row_at_line_maps_detail_lines_to_their_row() -> None:
+    tl = RunTimeline(run_timeline_view())
+    tl._view = _three_row_view()
+    starts = tl.row_line_starts()
+    assert tl.row_at_line(starts[1]) == 1
+    assert tl.row_at_line(starts[1] + 1) == 1  # the assert-detail line
+    assert tl.row_at_line(starts[0]) == 0
+    assert tl.row_at_line(999) == 2  # past the end -> last row
+
+
 def test_detects_a_newly_arrived_failure_row() -> None:
     prev = (TimelineRow(0, "task", "✓", "completed", "ok", "completed", ""),)
     new = (

@@ -159,6 +159,10 @@ class ConsoleApp(IntuiApp):
         # paused); the held view itself stays frozen via the bridge.
         self.store.subscribe(lambda _snapshot: self._refresh_scrub_bar())
         self._refresh_scrub_bar()
+        # Keyboard-first: the timeline cursor works from the first keystroke.
+        from intui.console.timeline_widget import RunTimeline
+
+        self.query_one(RunTimeline).focus()
 
     def action_palette(self) -> None:
         self.open_command_palette(_command_registry())
@@ -285,6 +289,9 @@ class ConsoleApp(IntuiApp):
             self.query_one("#prompt-field", Input).value = ""
             self._run_slash(name, original=f"/{name}")
             return
+        if intent.name == "timeline_row":  # Enter on a selected timeline row
+            self._activate_timeline_row(str(intent.payload.get("kind", "")))
+            return
         if intent.name in ("copy_path", "open_file", "delete_file"):
             self._handle_file_action(intent)
             return
@@ -329,6 +336,14 @@ class ConsoleApp(IntuiApp):
 
     def action_focus_prompt(self) -> None:
         self.query_one(PromptInput).focus_prompt()
+
+    def _activate_timeline_row(self, kind: str) -> None:
+        """Enter on a timeline row: a failure unfolds the diff where you are;
+        the summary card opens the evidence panel. Other rows are inert."""
+        if kind == "failure":
+            self.query_one("#inline-diff").display = True
+        elif kind == "card":
+            self.action_open_panel("evidence")
 
     def _handle_file_action(self, intent: Intent) -> None:
         """Fulfill a file-action intent.
