@@ -137,6 +137,20 @@ def test_row_at_line_maps_detail_lines_to_their_row() -> None:
     assert tl.row_at_line(999) == 2  # past the end -> last row
 
 
+def test_running_suffix_ticks_live_and_suppresses_stale() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from intui.console.timeline_widget import running_suffix
+
+    now = datetime(2026, 7, 2, 12, 0, 0, tzinfo=UTC)
+    assert running_suffix(now - timedelta(seconds=2.4), now) == " · 2.4s"
+    assert running_suffix(now - timedelta(seconds=83), now) == " · 1m23s"
+    # a replayed old recording must not show absurd wall-clock durations
+    assert running_suffix(now - timedelta(days=17), now) == ""
+    assert running_suffix(None, now) == ""
+    assert running_suffix(now + timedelta(seconds=5), now) == ""  # clock skew
+
+
 def test_detects_a_newly_arrived_failure_row() -> None:
     prev = (TimelineRow(0, "task", "✓", "completed", "ok", "completed", ""),)
     new = (

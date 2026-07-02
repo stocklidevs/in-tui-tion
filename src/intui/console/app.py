@@ -106,6 +106,9 @@ class ConsoleApp(IntuiApp):
         ("slash", "focus_prompt", "Prompt"),
         Binding("up", "palette_move(-1)", "Palette up", show=False),
         Binding("down", "palette_move(1)", "Palette down", show=False),
+        # priority so it wins over the screen's focus-next; check_action gates
+        # it to when the palette is actually showing
+        Binding("tab", "palette_complete", "Complete", show=False, priority=True),
         ("ctrl+p", "palette", "Commands"),
         Binding("ctrl+s", "record", "Save run", show=False),
         ("space", "scrub_toggle", "Pause/Live"),
@@ -333,6 +336,22 @@ class ConsoleApp(IntuiApp):
         palette = self.query_one(SlashPalette)
         if palette.display:
             palette.move_selection(delta)
+
+    def action_palette_complete(self) -> None:
+        """Tab: fill the prompt with the highlighted suggestion."""
+        field = self.query_one("#prompt-field", Input)
+        name = self.query_one(SlashPalette).selected_for(field.value)
+        if name is not None:
+            field.value = f"/{name}"
+            field.cursor_position = len(field.value)
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action == "palette_complete":
+            try:
+                return bool(self.query_one(SlashPalette).display)
+            except Exception:  # noqa: BLE001 - not composed yet
+                return False
+        return True
 
     def action_focus_prompt(self) -> None:
         self.query_one(PromptInput).focus_prompt()

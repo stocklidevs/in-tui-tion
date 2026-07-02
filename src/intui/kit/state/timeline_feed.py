@@ -66,6 +66,7 @@ class TimelineRow:
     ref: str  # task/work-item reference for updates + failure matching
     detail: str = ""  # attached failure detail / card body (rendered bordered)
     elapsed: str = ""  # "+4.2s" since the first event (the run's own clock)
+    at: datetime | None = None  # the row's start timestamp (ticking, live only)
 
 
 @dataclass(frozen=True, slots=True)
@@ -163,6 +164,7 @@ def _reduce_scoped(state: TimelineState, event: Event, *, ref: str | None) -> Ti
             status=status,
             ref=ref,
             elapsed=_elapsed(state, event),
+            at=event.timestamp,
         ),
     )
 

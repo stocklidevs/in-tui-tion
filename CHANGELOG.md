@@ -4,6 +4,21 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-07-02
+
+### Added
+
+- **Ticking durations** — a running row shows a live ``· 2.4s`` beside its
+  status, updating once a second. Live streams only: replayed recordings and
+  scrub-paused views never tick (the row's start timestamp travels with it;
+  implausible wall-clock deltas are suppressed).
+- **Tab-complete in the slash palette** — Tab fills the prompt with the
+  highlighted suggestion; with the palette hidden, Tab keeps cycling focus.
+- **Click outside to close** — clicking the dimmed background around a panel
+  overlay dismisses it (alongside Esc and the ✕).
+- Feature-tour screenshots regenerated for the timeline-era console (overlays,
+  inline diff, scrubber).
+
 ## [1.3.0] - 2026-07-01
 
 ### Added
