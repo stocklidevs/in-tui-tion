@@ -4,6 +4,17 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-07-02
+
+### Changed
+
+- **Feed virtualization** — the timeline body is now a Line-API `ScrollView`:
+  only the *visible* lines are rendered, with a small per-row cache pruned to
+  the viewport's neighborhood. A 50k-event run scrolls as cheaply as a
+  50-event one; rendering no longer rebuilds the whole feed per event.
+- **Summary-card metrics chunk at ≤3 per line**, so every card line keeps its
+  ``▌`` border (long single lines used to wrap and lose it).
+
 ## [1.4.0] - 2026-07-02
 
 ### Added

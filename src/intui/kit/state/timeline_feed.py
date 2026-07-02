@@ -257,6 +257,9 @@ def _reduce_card(state: TimelineState, event: Event) -> TimelineState:
                 value = str(row.get("value", ""))
                 if label:
                     parts.append(f"{label} {value}".strip())
+    # ≤3 metrics per line: every card line stays short enough to keep its
+    # ▌ border (long single lines used to wrap and lose it)
+    chunks = [" · ".join(parts[i : i + 3]) for i in range(0, len(parts), 3)]
     return _append(
         state,
         TimelineRow(
@@ -267,7 +270,7 @@ def _reduce_card(state: TimelineState, event: Event) -> TimelineState:
             text=str(title) if title else "summary",
             status="",
             ref="",
-            detail=" · ".join(parts),
+            detail="\n".join(chunks),
             elapsed=_elapsed(state, event),
         ),
     )
