@@ -15,7 +15,7 @@ from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.widgets import Static
 
-from intui.kit.state import TimelineFeedView
+from intui.kit.state import TimelineFeedView, TimelineRow
 from intui.viewmodels.selector import Selector
 from intui.widgets.bound import BoundContainer
 
@@ -35,9 +35,43 @@ class RunTimeline(BoundContainer):
         yield VerticalScroll(Static(id="timeline-body"), id="timeline-scroll")
 
     def sync_view(self, vm: TimelineFeedView) -> None:
+        if self._has_new_failure(self._view.rows, vm.rows):
+            self._flash()
         self._view = vm
         self.query_one("#timeline-body", Static).update(self._build_text())
         self.query_one("#timeline-scroll", VerticalScroll).scroll_end(animate=False)
+
+    @staticmethod
+    def _has_new_failure(prev: tuple[TimelineRow, ...], new: tuple[TimelineRow, ...]) -> bool:
+        """True when a failure row arrives after the feed already had content.
+
+        The startup sync (empty -> populated) never flashes: replaying a
+        recording that happens to contain failures is history, not news.
+        """
+        if not prev:
+            return False
+        prev_fail = sum(1 for r in prev if r.kind == "failure")
+        new_fail = sum(1 for r in new if r.kind == "failure")
+        return new_fail > prev_fail
+
+    def _flash(self) -> None:
+        """One-shot red flash when a failure lands — grabs you, then settles.
+
+        Honors reduced motion (Textual's ``animation_level``); a failed row
+        still carries its ✗ glyph + label, so motion is never the only signal
+        (Principle IV).
+        """
+        if not self._motion_enabled():
+            return
+        body = self.query_one("#timeline-body", Static)
+        body.styles.background = "#3a1414"
+        body.styles.animate("background", value="#3a141400", duration=0.9)
+
+    def _motion_enabled(self) -> bool:
+        try:
+            return str(self.app.animation_level) != "none"
+        except Exception:  # noqa: BLE001 - outside a running app (unit tests)
+            return False
 
     def _build_text(self) -> Text:
         if not self._view.rows:

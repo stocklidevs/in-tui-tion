@@ -23,3 +23,14 @@ def test_empty_state() -> None:
     tl = RunTimeline(run_timeline_view())
     tl._view = TimelineFeedView(rows=())
     assert "waiting for events" in tl.log_text().lower()
+
+
+def test_detects_a_newly_arrived_failure_row() -> None:
+    prev = (TimelineRow(0, "task", "✓", "completed", "ok", "completed", ""),)
+    new = (
+        *prev,
+        TimelineRow(1, "failure", "✗", "failed", "FAILED x", "failed", ""),
+    )
+    assert RunTimeline._has_new_failure(prev, new) is True
+    assert RunTimeline._has_new_failure(new, new) is False
+    assert RunTimeline._has_new_failure((), prev) is False
