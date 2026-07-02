@@ -7,7 +7,6 @@ from __future__ import annotations
 from examples.intentforge_console.app import build_app
 
 from intui.events import StreamState
-from intui.kit import ViewRouter
 from intui.kit.state import diff_view, evidence_view, tree_view
 
 
@@ -44,10 +43,14 @@ async def test_real_if_run_navigates_views_without_crash() -> None:
     app = build_app()
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        for key, view in [("t", "tasks"), ("d", "diff"), ("e", "evidence")]:
+        for key in ("t", "e"):  # browsable panels open as overlays
             await pilot.press(key)
             await pilot.pause(0.05)
-            assert app.query_one(ViewRouter).current_view() == view
+            assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay", key
+            await pilot.press("escape")
+            await pilot.pause(0.05)
+        await pilot.press("d")  # diff (inline region; no-crash)
+        await pilot.pause(0.05)
         rows = evidence_view()(app.store.snapshot).rows
         assert any(r.key == "certified_level" for r in rows)
         assert app.is_running

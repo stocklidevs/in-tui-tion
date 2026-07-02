@@ -7,7 +7,6 @@ from pathlib import Path
 
 from intui.console import build_console
 from intui.events import MemorySource, NdjsonStreamSource, StreamState
-from intui.kit import ViewRouter
 from intui.kit.state import evidence_view
 
 RECORDING = (
@@ -41,20 +40,18 @@ async def test_renders_canonical_stream_into_slices() -> None:
         assert app.store.snapshot.health.state is StreamState.ENDED
 
 
-async def test_views_are_keyboard_navigable() -> None:
+async def test_panels_are_keyboard_navigable() -> None:
+    # Browsable panels open as overlays (Esc closes); full coverage lives in
+    # tests/integration/test_console_overlays.py.
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        for key, view in [
-            ("l", "lanes"),
-            ("f", "files"),
-            ("d", "diff"),
-            ("e", "evidence"),
-            ("t", "tasks"),
-        ]:
+        for key in ("l", "f", "e", "t", "m"):
             await pilot.press(key)
             await pilot.pause(0.05)
-            assert app.query_one(ViewRouter).current_view() == view
+            assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay", key
+            await pilot.press("escape")
+            await pilot.pause(0.05)
         assert app.is_running
 
 
@@ -87,8 +84,8 @@ async def test_files_view_shows_workspace_tree() -> None:
         await _drain(app, pilot)
         await pilot.press("f")
         await pilot.pause(0.05)
-        assert app.query_one(ViewRouter).current_view() == "files"
-        paths = app.query_one(FileTree).paths()
+        assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay"
+        paths = app.screen_stack[-1].query_one(FileTree).paths()
         assert "src/app.py" in paths and "README.md" in paths
 
 
@@ -134,7 +131,10 @@ async def _select_file(app: object, pilot: object, path: str) -> None:
 
     await pilot.press("f")  # type: ignore[attr-defined]
     await pilot.pause(0.05)  # type: ignore[attr-defined]
-    tree = app.query_one(FileTree).query_one(Tree)  # type: ignore[attr-defined]
+    # query within the active overlay screen (App.query_one searches the
+    # default screen, not the pushed modal)
+    overlay = app.screen_stack[-1]  # type: ignore[attr-defined]
+    tree = overlay.query_one(FileTree).query_one(Tree)
     tree.focus()
     await pilot.pause()  # type: ignore[attr-defined]
 
@@ -231,8 +231,8 @@ async def test_metrics_view_reachable_and_shows_panel() -> None:
         await _drain(app, pilot)
         await pilot.press("m")
         await pilot.pause(0.05)
-        assert app.query_one(ViewRouter).current_view() == "metrics"
-        panel = app.query_one(MetricsPanel)
+        assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay"
+        panel = app.screen_stack[-1].query_one(MetricsPanel)
         assert panel.status() == "passed"
         assert "build.py" in panel.summary_text()
 

@@ -17,6 +17,7 @@ from pathlib import Path
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
+from textual.widget import Widget
 from textual.widgets import Footer, Header, Label, Static
 
 from intui.actions import Intent
@@ -87,6 +88,11 @@ class ConsoleApp(IntuiApp):
     TITLE = "in-TUI-tion · console"
     BINDINGS = [
         ("q", "quit", "Quit"),
+        ("t", "open_panel('tasks')", "Tasks"),
+        ("l", "open_panel('lanes')", "Lanes"),
+        ("f", "open_panel('files')", "Files"),
+        ("e", "open_panel('evidence')", "Evidence"),
+        ("m", "open_panel('metrics')", "Metrics"),
         ("ctrl+p", "palette", "Commands"),
         ("ctrl+s", "record", "Save run"),
         ("space", "scrub_toggle", "Pause/Live"),
@@ -156,6 +162,34 @@ class ConsoleApp(IntuiApp):
 
     def action_palette(self) -> None:
         self.open_command_palette(_command_registry())
+
+    # --- Panel overlays ------------------------------------------------------
+
+    def action_open_panel(self, name: str) -> None:
+        """Open a browsable panel as a modal overlay over the timeline."""
+        from intui.console.overlays import PanelOverlay
+
+        panel = self._panel_for(name)
+        if panel is None:
+            return
+        self.push_screen(PanelOverlay(name, panel))
+
+    def _panel_for(self, name: str) -> Widget | None:
+        ps = self._public_safe
+        if name == "files":
+            return FileTree(file_tree_view(public_safe=ps))
+        if name == "metrics":
+            return MetricsPanel(metrics_view(public_safe=ps))
+        if name == "lanes":
+            return LanesPanel(lanes_view())
+        if name == "evidence":
+            return EvidencePanel(evidence_view(public_safe=ps))
+        if name == "tasks":
+            return VerticalScroll(
+                TaskCounterChip(chip_view()),
+                TaskTree(tree_view()),
+            )
+        return None
 
     # --- Time-travel scrubber -----------------------------------------------
 
