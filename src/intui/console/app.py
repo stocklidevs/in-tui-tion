@@ -104,6 +104,8 @@ class ConsoleApp(IntuiApp):
         Binding("m", "open_panel('metrics')", "Metrics", show=False),
         ("d", "toggle_diff", "Diff"),
         ("slash", "focus_prompt", "Prompt"),
+        Binding("up", "palette_move(-1)", "Palette up", show=False),
+        Binding("down", "palette_move(1)", "Palette down", show=False),
         ("ctrl+p", "palette", "Commands"),
         Binding("ctrl+s", "record", "Save run", show=False),
         ("space", "scrub_toggle", "Pause/Live"),
@@ -278,6 +280,11 @@ class ConsoleApp(IntuiApp):
         if intent.name == "prompt_submitted":
             self._handle_prompt(str(intent.payload.get("text", "")))
             return
+        if intent.name == "palette_pick":  # a clicked suggestion
+            name = str(intent.payload["name"])
+            self.query_one("#prompt-field", Input).value = ""
+            self._run_slash(name, original=f"/{name}")
+            return
         if intent.name in ("copy_path", "open_file", "delete_file"):
             self._handle_file_action(intent)
             return
@@ -292,24 +299,33 @@ class ConsoleApp(IntuiApp):
         """
         if text.startswith("/"):
             word = text[1:].split()[0].lower() if text[1:].strip() else ""
-            resolved = resolve_command(word)
-            if resolved in PANELS:
-                self.action_open_panel(resolved)
-            elif resolved == "diff":
-                self.action_toggle_diff()
-            elif resolved == "scrub":
-                self.action_scrub_toggle()
-            elif resolved == "save":
-                self.action_record()
-            else:
-                self.notify(f"unknown command: {text}", timeout=3.0)
+            # what the palette had highlighted wins; else unique-prefix
+            resolved = self.query_one(SlashPalette).selected_for(text) or resolve_command(word)
+            self._run_slash(resolved, original=text)
             return
         self.store.ingest(prompt_message_event(text))
+
+    def _run_slash(self, resolved: str | None, *, original: str) -> None:
+        if resolved is not None and resolved in PANELS:
+            self.action_open_panel(resolved)
+        elif resolved == "diff":
+            self.action_toggle_diff()
+        elif resolved == "scrub":
+            self.action_scrub_toggle()
+        elif resolved == "save":
+            self.action_record()
+        else:
+            self.notify(f"unknown command: {original}", timeout=3.0)
 
     def on_input_changed(self, event: Input.Changed) -> None:
         """Live slash-command hints above the prompt as the user types."""
         if event.input.id == "prompt-field":
             self.query_one(SlashPalette).update_filter(event.value)
+
+    def action_palette_move(self, delta: int) -> None:
+        palette = self.query_one(SlashPalette)
+        if palette.display:
+            palette.move_selection(delta)
 
     def action_focus_prompt(self) -> None:
         self.query_one(PromptInput).focus_prompt()

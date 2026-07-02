@@ -74,6 +74,49 @@ async def test_typing_slash_shows_palette_and_prefix_submit_resolves() -> None:
         assert palette.display is False
 
 
+async def test_arrow_down_then_enter_runs_the_selected_command() -> None:
+    from textual.widgets import Input
+
+    from intui.kit import LanesPanel
+
+    app = build_console(_source())
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        field = app.query_one("#prompt-field", Input)
+        field.focus()
+        await pilot.press("slash")  # "/" -> all commands, tasks selected
+        await pilot.press("down")  # -> lanes
+        await pilot.press("enter")
+        await pilot.pause(0.05)
+        overlay = app.screen_stack[-1]
+        assert overlay.__class__.__name__ == "PanelOverlay"
+        assert overlay.query(LanesPanel)  # the SELECTED command ran, not the first
+        await pilot.press("escape")
+        await pilot.pause(0.05)
+
+
+async def test_clicking_a_suggestion_runs_it() -> None:
+    from textual.widgets import Input
+
+    from intui.console.slash_palette import SlashPalette
+    from intui.kit import FileTree
+
+    app = build_console(_source())
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        field = app.query_one("#prompt-field", Input)
+        field.focus()
+        await pilot.press("slash")
+        await pilot.pause(0.05)
+        await pilot.click(SlashPalette, offset=(4, 2))  # row 2 = files
+        await pilot.pause(0.05)
+        overlay = app.screen_stack[-1]
+        assert overlay.__class__.__name__ == "PanelOverlay"
+        assert overlay.query(FileTree)
+        # the prompt cleared, so the palette is gone
+        assert field.value == ""
+
+
 async def test_close_button_dismisses_overlay_on_click() -> None:
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:
