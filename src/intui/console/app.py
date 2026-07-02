@@ -53,6 +53,7 @@ from intui.kit.state import (
     run_status_slice,
     run_timeline_view,
     taskboard_slice,
+    timeline_slice,
     tree_view,
     workspace_slice,
 )
@@ -343,6 +344,7 @@ def build_console(
     """
     store = Store(
         compose_reducers(
+            timeline=timeline_slice(),
             conversation=conversation_slice(),
             taskboard=taskboard_slice(),
             artifacts=artifacts_slice(),

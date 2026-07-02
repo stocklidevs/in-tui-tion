@@ -22,8 +22,12 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 
 ### Added
 
-- `run_timeline_view` selector + `TimelineRow`/`TimelineFeedView` models
-  (engine-free) and the `RunTimeline` console widget.
+- `timeline_slice` reducer + `run_timeline_view` selector and
+  `TimelineRow`/`TimelineFeedView` models (engine-free), plus the `RunTimeline`
+  console widget. The timeline is reduced **directly from the stream in arrival
+  order** (work items and tasks are single rows updated in place); a
+  ``FAILED <ref>: detail`` message attaches to its failure row, which renders
+  as a bordered callout with the detail inside.
 
 ## [1.1.0] - 2026-06-14
 
