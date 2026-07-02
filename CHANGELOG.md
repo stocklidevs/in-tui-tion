@@ -4,6 +4,19 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-07-01
+
+### Added
+
+- **Selectable timeline rows** — the timeline is an instrument, not just a
+  display. ``↑/↓`` (or ``j/k``) move a reverse-video cursor through the rows
+  (pausing live-follow, like ``less +F``); **Enter** activates the selected
+  row — a failure unfolds the inline diff, the summary card opens the
+  evidence overlay; **click** selects the row under the pointer; **Esc**
+  returns to live-follow. The timeline has focus on launch, so the cursor
+  works from the first keystroke. Activation flows through the intent path
+  (Principle III); selection is view-local state and never touches the store.
+
 ## [1.2.0] - 2026-07-01
 
 ### Changed
