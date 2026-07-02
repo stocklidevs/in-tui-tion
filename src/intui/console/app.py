@@ -21,10 +21,11 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
 from textual.widget import Widget
-from textual.widgets import Footer, Header, Static
+from textual.widgets import Footer, Header, Input, Static
 
 from intui.actions import Intent
 from intui.app import IntuiApp
+from intui.console.slash_palette import SlashPalette, resolve_command
 from intui.events import Event, EventSource, Scope, write_recording
 from intui.kit import (
     ActivityStrip,
@@ -83,6 +84,8 @@ def _command_registry() -> CommandRegistry:
             Command("toggle_diff", "Diff", Intent("toggle_diff"), key="d"),
             Command("panel_evidence", "Evidence", _open_panel_intent("evidence"), key="e"),
             Command("panel_metrics", "Metrics", _open_panel_intent("metrics"), key="m"),
+            Command("scrub", "Pause/Live (scrub)", Intent("scrub_toggle")),
+            Command("save_run", "Save run", Intent("record")),
         ]
     )
 
@@ -93,15 +96,16 @@ class ConsoleApp(IntuiApp):
     TITLE = "in-TUI-tion · console"
     BINDINGS = [
         ("q", "quit", "Quit"),
-        ("t", "open_panel('tasks')", "Tasks"),
-        ("l", "open_panel('lanes')", "Lanes"),
-        ("f", "open_panel('files')", "Files"),
-        ("e", "open_panel('evidence')", "Evidence"),
-        ("m", "open_panel('metrics')", "Metrics"),
+        # The footer stays lean: the slash palette and ctrl+p teach the rest.
+        Binding("t", "open_panel('tasks')", "Tasks", show=False),
+        Binding("l", "open_panel('lanes')", "Lanes", show=False),
+        Binding("f", "open_panel('files')", "Files", show=False),
+        Binding("e", "open_panel('evidence')", "Evidence", show=False),
+        Binding("m", "open_panel('metrics')", "Metrics", show=False),
         ("d", "toggle_diff", "Diff"),
         ("slash", "focus_prompt", "Prompt"),
         ("ctrl+p", "palette", "Commands"),
-        ("ctrl+s", "record", "Save run"),
+        Binding("ctrl+s", "record", "Save run", show=False),
         ("space", "scrub_toggle", "Pause/Live"),
         Binding("comma", "scrub_back", "Step back", show=False),
         Binding("full_stop", "scrub_forward", "Step fwd", show=False),
@@ -142,7 +146,8 @@ class ConsoleApp(IntuiApp):
         diff_region = DiffViewer(diff_view(public_safe=self._public_safe), id="inline-diff")
         diff_region.display = False
         yield diff_region
-        yield PromptInput(placeholder="type /tasks /files /diff /metrics … or a note")
+        yield SlashPalette()
+        yield PromptInput(placeholder="/ for commands, or type a note")
         yield Static(id="scrub-bar")
         yield Footer()
 
@@ -281,23 +286,30 @@ class ConsoleApp(IntuiApp):
     def _handle_prompt(self, text: str) -> None:
         """Route a floor-prompt submission.
 
-        ``/name`` runs the matching command (panels, diff, scrub, save);
-        anything else is appended to the timeline as a user note.
+        ``/name`` runs the matching command (a unique prefix resolves, e.g.
+        ``/f`` → ``/files``); anything else is appended to the timeline as a
+        user note.
         """
         if text.startswith("/"):
             word = text[1:].split()[0].lower() if text[1:].strip() else ""
-            if word in PANELS:
-                self.action_open_panel(word)
-            elif word == "diff":
+            resolved = resolve_command(word)
+            if resolved in PANELS:
+                self.action_open_panel(resolved)
+            elif resolved == "diff":
                 self.action_toggle_diff()
-            elif word == "scrub":
+            elif resolved == "scrub":
                 self.action_scrub_toggle()
-            elif word == "save":
+            elif resolved == "save":
                 self.action_record()
             else:
                 self.notify(f"unknown command: {text}", timeout=3.0)
             return
         self.store.ingest(prompt_message_event(text))
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Live slash-command hints above the prompt as the user types."""
+        if event.input.id == "prompt-field":
+            self.query_one(SlashPalette).update_filter(event.value)
 
     def action_focus_prompt(self) -> None:
         self.query_one(PromptInput).focus_prompt()

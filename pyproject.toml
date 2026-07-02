@@ -117,6 +117,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "TID"]
 "src/intui/console/app.py" = ["TID251"]
 "src/intui/console/timeline_widget.py" = ["TID251"]
 "src/intui/console/overlays.py" = ["TID251"]
+"src/intui/console/slash_palette.py" = ["TID251"]
 "tests/snapshot/**" = ["TID251"]
 "tests/integration/**" = ["TID251"]
 "tests/replay/test_responsiveness.py" = ["TID251"]  # drives a real app under load

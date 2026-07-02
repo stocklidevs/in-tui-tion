@@ -48,6 +48,32 @@ async def test_slash_commands_from_prompt_open_overlays_and_toggle_diff() -> Non
         assert len(after) == before + 1 and after[-1].text == "hello run"
 
 
+async def test_typing_slash_shows_palette_and_prefix_submit_resolves() -> None:
+    from textual.widgets import Input
+
+    from intui.console.slash_palette import SlashPalette
+
+    app = build_console(_source())
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        palette = app.query_one(SlashPalette)
+        field = app.query_one("#prompt-field", Input)
+        assert palette.display is False
+        field.value = "/f"
+        await pilot.pause(0.05)
+        assert palette.display is True
+        assert "/files" in palette.hint_text()
+        # submitting the unique prefix resolves to the command
+        field.focus()
+        await pilot.press("enter")
+        await pilot.pause(0.05)
+        assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay"
+        await pilot.press("escape")
+        await pilot.pause(0.05)
+        # the input cleared on submit, so the palette hides again
+        assert palette.display is False
+
+
 async def test_close_button_dismisses_overlay_on_click() -> None:
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:

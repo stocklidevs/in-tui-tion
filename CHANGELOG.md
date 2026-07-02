@@ -34,6 +34,11 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 - **Summary card in the flow** — ``evidence_ready`` renders as an
   accent-bordered card on the timeline (metrics joined ``label value · …``),
   values redacted by default (``run_timeline_view(public_safe=…)``).
+- **Slash palette** — typing ``/`` in the prompt floats live-filtered command
+  hints (with descriptions) above the input; a unique prefix resolves on
+  submit (``/f`` → ``/files``). Overlays carry a clickable ``✕ close`` in the
+  title bar. The footer shows only the essentials (the palette and ``ctrl+p``
+  teach the rest).
 
 ## [1.1.0] - 2026-06-14
 
