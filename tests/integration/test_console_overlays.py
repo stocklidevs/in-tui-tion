@@ -24,6 +24,30 @@ async def _drain(app: object, pilot: object) -> None:
     await pilot.pause()  # type: ignore[attr-defined]
 
 
+async def test_slash_commands_from_prompt_open_overlays_and_toggle_diff() -> None:
+    from intui.actions import Intent
+
+    app = build_console(_source())
+    async with app.run_test(size=(120, 40)) as pilot:
+        await _drain(app, pilot)
+        # a slash command routes to the overlay, like the key
+        await app.handle_intent(Intent("prompt_submitted", {"text": "/files"}))
+        await pilot.pause(0.05)
+        assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay"
+        await pilot.press("escape")
+        await pilot.pause(0.05)
+        # /diff toggles the inline region
+        await app.handle_intent(Intent("prompt_submitted", {"text": "/diff"}))
+        await pilot.pause(0.05)
+        assert app.query_one("#inline-diff").display is True
+        # plain text becomes a user message on the timeline
+        before = len(app.store.snapshot.slice("conversation").entries)
+        await app.handle_intent(Intent("prompt_submitted", {"text": "hello run"}))
+        await pilot.pause(0.05)
+        after = app.store.snapshot.slice("conversation").entries
+        assert len(after) == before + 1 and after[-1].text == "hello run"
+
+
 async def test_keys_open_overlays_and_escape_closes() -> None:
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:

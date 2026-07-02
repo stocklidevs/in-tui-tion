@@ -29,6 +29,8 @@ async def _drain(app: object, pilot: object) -> None:
 
 
 async def test_renders_canonical_stream_into_slices() -> None:
+    from intui.console import RunTimeline
+
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
@@ -38,6 +40,10 @@ async def test_renders_canonical_stream_into_slices() -> None:
         assert len(app.store.snapshot.slice("conversation").entries) >= 5
         assert app.store.snapshot.slice("taskboard").tasks
         assert app.store.snapshot.health.state is StreamState.ENDED
+        # the timeline is the primary surface and reduced the run
+        timeline = app.query_one(RunTimeline)
+        assert timeline.log_text().strip()
+        assert "waiting for events" not in timeline.log_text()
 
 
 async def test_panels_are_keyboard_navigable() -> None:
@@ -333,7 +339,10 @@ async def test_scrub_steps_through_history() -> None:
     app = build_console(_tasks_stream(4))
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        chip = app.query_one(TaskCounterChip)
+        # scrub while the tasks overlay is open (the chip lives there now)
+        await pilot.press("t")
+        await pilot.pause(0.05)
+        chip = app.screen_stack[-1].query_one(TaskCounterChip)
         assert "/ 4 tasks" in chip.header_text()
 
         app.action_scrub_toggle()  # pause at 4
@@ -363,7 +372,9 @@ async def test_scrub_holds_while_live_grows() -> None:
     app = build_console(_tasks_stream(2))
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        chip = app.query_one(TaskCounterChip)
+        await pilot.press("t")  # the chip lives in the tasks overlay now
+        await pilot.pause(0.05)
+        chip = app.screen_stack[-1].query_one(TaskCounterChip)
 
         app.action_scrub_back()  # pause at 1
         await pilot.pause(0.05)
