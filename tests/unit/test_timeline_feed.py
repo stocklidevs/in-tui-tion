@@ -136,6 +136,22 @@ def test_card_values_are_redacted_unless_opted_out(tmp_path: Path) -> None:
     assert "run-42" in card.detail
 
 
+def test_scoped_rows_carry_their_start_timestamp(tmp_path: Path) -> None:
+    out = tmp_path / "run.jsonl"
+    rec = run_recorder(out, run_id="t")
+    rec.work_item_started("w1", task_id="m.py", title="test_one")
+    rec.work_item_completed("w1", task_id="m.py", status="completed")
+    rec.work_item_started("w2", task_id="m.py", title="test_two")  # still running
+    rec.close()
+
+    view = run_timeline_view()(_store_from(out).snapshot)
+    rows = {r.text: r for r in view.rows}
+    assert rows["test_two"].status == "active"
+    assert rows["test_two"].at is not None  # the widget ticks now - at while live
+    # completion keeps the START timestamp (chronological position)
+    assert rows["test_one"].at is not None
+
+
 def test_empty_stream_yields_empty_feed(tmp_path: Path) -> None:
     out = tmp_path / "run.jsonl"
     rec = run_recorder(out, run_id="t")

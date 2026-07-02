@@ -8,6 +8,7 @@ clickable ✕ so mouse users have a visible way out alongside Esc.
 
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
@@ -56,3 +57,9 @@ class PanelOverlay(ModalScreen[None]):
 
     def action_close_overlay(self) -> None:
         self.dismiss(None)
+
+    def on_click(self, event: events.Click) -> None:
+        """Clicking the dimmed background (outside the frame) dismisses."""
+        frame = self.query_one("#overlay-frame")
+        if not frame.region.contains(event.screen_x, event.screen_y):
+            self.dismiss(None)

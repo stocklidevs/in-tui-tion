@@ -15,6 +15,7 @@ widget only ever *posts intents* on activation — acting is the app's job
 from __future__ import annotations
 
 import contextlib
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from rich.text import Text
@@ -25,9 +26,32 @@ from textual.containers import VerticalScroll
 from textual.widgets import Static
 
 from intui.actions.intents import Intent
+from intui.events import StreamState
 from intui.kit.state import TimelineFeedView, TimelineRow
 from intui.viewmodels.selector import Selector
 from intui.widgets.bound import BoundContainer
+
+#: Ignore wall-clock deltas beyond this when ticking a running row — a
+#: replayed old recording carries historical timestamps, not "now".
+_SANE_RUNNING = timedelta(hours=1)
+
+
+def running_suffix(at: datetime | None, now: datetime) -> str:
+    """`` · 2.4s`` for a row that started ``at`` and is still running.
+
+    Empty when there is no start time, the delta is negative (clock skew), or
+    the delta is implausibly large (replaying a historical recording).
+    """
+    if at is None:
+        return ""
+    delta = now - at
+    if delta < timedelta(0) or delta > _SANE_RUNNING:
+        return ""
+    seconds = delta.total_seconds()
+    if seconds >= 60:
+        minutes, rest = divmod(int(seconds), 60)
+        return f" · {minutes}m{rest:02d}s"
+    return f" · {seconds:.1f}s"
 
 
 class RunTimeline(BoundContainer):
@@ -56,6 +80,24 @@ class RunTimeline(BoundContainer):
         scroll = VerticalScroll(Static(id="timeline-body"), id="timeline-scroll")
         scroll.can_focus = False  # keys belong to the timeline's cursor
         yield scroll
+
+    def on_mount(self) -> None:
+        # Tick running-row durations once a second while the stream is live.
+        self.set_interval(1.0, self._tick_running)
+
+    def _tick_running(self) -> None:
+        if not self._is_live():
+            return
+        if any(r.status == "active" for r in self._view.rows):
+            with contextlib.suppress(Exception):
+                self.query_one("#timeline-body", Static).update(self._build_text())
+
+    def _is_live(self) -> bool:
+        try:
+            store = self.app.store  # type: ignore[attr-defined]
+            return bool(store.snapshot.health.state is StreamState.LIVE)
+        except Exception:  # noqa: BLE001 - outside a running console
+            return False
 
     def sync_view(self, vm: TimelineFeedView) -> None:
         if self._has_new_failure(self._view.rows, vm.rows):
@@ -207,6 +249,10 @@ class RunTimeline(BoundContainer):
                 text.append(row.text, style=cursor)
                 if row.label and row.kind == "task":
                     text.append(f"  [{row.label}]", style=f"dim {cursor}".strip())
+                if row.status == "active" and self._is_live():
+                    tick = running_suffix(row.at, datetime.now(tz=UTC))
+                    if tick:
+                        text.append(tick, style=f"dim {cursor}".strip())
             self._append_elapsed(text, row, cursor=cursor)
         self._row_lines = tuple(starts)
         return text
