@@ -136,6 +136,30 @@ def test_card_values_are_redacted_unless_opted_out(tmp_path: Path) -> None:
     assert "run-42" in card.detail
 
 
+def test_card_metrics_chunk_into_short_lines(tmp_path: Path) -> None:
+    out = tmp_path / "run.jsonl"
+    rec = run_recorder(out, run_id="t")
+    rec.evidence(
+        title="summary",
+        passed=120,
+        failed=1,
+        skipped=3,
+        total=124,
+        duration="4.2s",
+        flakes=0,
+        reruns=2,
+    )
+    rec.close()
+
+    view = run_timeline_view()(_store_from(out).snapshot)
+    card = next(r for r in view.rows if r.kind == "card")
+    lines = card.detail.splitlines()
+    # 7 metrics, at most 3 per line -> 3 lines; every line keeps its ▌ border
+    assert len(lines) == 3
+    assert all(line.count("·") <= 2 for line in lines)
+    assert "passed 120" in lines[0]
+
+
 def test_scoped_rows_carry_their_start_timestamp(tmp_path: Path) -> None:
     out = tmp_path / "run.jsonl"
     rec = run_recorder(out, run_id="t")
