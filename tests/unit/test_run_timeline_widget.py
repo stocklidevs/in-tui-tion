@@ -42,6 +42,52 @@ def test_failure_renders_as_bordered_callout_with_detail() -> None:
     assert not any("moving on" in ln for ln in callout)  # ordinary rows are not
 
 
+def test_user_and_system_messages_carry_voice_tags() -> None:
+    tl = RunTimeline(run_timeline_view())
+    tl._view = TimelineFeedView(
+        rows=(
+            TimelineRow(0, "message", "›", "agent", "planning tasks", "", ""),
+            TimelineRow(1, "message", "›", "user", "sounds good", "", ""),
+            TimelineRow(2, "message", "›", "system", "stream ended", "", ""),
+        )
+    )
+    lines = tl.log_text().splitlines()
+    assert not any("‹" in ln for ln in lines if "planning" in ln)  # agent = default voice
+    assert any("‹you›" in ln for ln in lines if "sounds good" in ln)
+    assert any("‹system›" in ln for ln in lines if "stream ended" in ln)
+
+
+def test_elapsed_time_renders_as_suffix() -> None:
+    tl = RunTimeline(run_timeline_view())
+    tl._view = TimelineFeedView(
+        rows=(TimelineRow(0, "task", "✓", "completed", "test_ok", "completed", "", "", "+4.2s"),)
+    )
+    line = tl.log_text().splitlines()[0]
+    assert line.endswith("+4.2s")
+
+
+def test_summary_card_renders_bordered_with_metrics() -> None:
+    tl = RunTimeline(run_timeline_view())
+    tl._view = TimelineFeedView(
+        rows=(
+            TimelineRow(
+                0,
+                "card",
+                "▣",
+                "summary",
+                "pytest summary",
+                "",
+                "",
+                "passed 2 · failed 1 · skipped 1",
+            ),
+        )
+    )
+    lines = tl.log_text().splitlines()
+    bordered = [ln for ln in lines if ln.startswith("▌")]
+    assert any("pytest summary" in ln for ln in bordered)
+    assert any("passed 2" in ln for ln in bordered)
+
+
 def test_detects_a_newly_arrived_failure_row() -> None:
     prev = (TimelineRow(0, "task", "✓", "completed", "ok", "completed", ""),)
     new = (
