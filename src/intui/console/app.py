@@ -74,7 +74,7 @@ def _command_registry() -> CommandRegistry:
             Command("view_tasks", "Tasks", select_view_intent("tasks"), key="t"),
             Command("view_lanes", "Lanes", select_view_intent("lanes"), key="l"),
             Command("view_files", "Files", select_view_intent("files"), key="f"),
-            Command("view_diff", "Diff", select_view_intent("diff"), key="d"),
+            Command("toggle_diff", "Diff", Intent("toggle_diff"), key="d"),
             Command("view_evidence", "Evidence", select_view_intent("evidence"), key="e"),
             Command("view_metrics", "Metrics", select_view_intent("metrics"), key="m"),
             Command("palette", "More", Intent("open_palette"), key="p"),
@@ -149,6 +149,9 @@ class ConsoleApp(IntuiApp):
                     "metrics": MetricsPanel(metrics_view(public_safe=self._public_safe)),
                 },
             )
+        diff_region = DiffViewer(diff_view(public_safe=self._public_safe), id="inline-diff")
+        diff_region.display = False
+        yield diff_region
         yield Static(id="scrub-bar")
         yield CommandBar(_command_registry())
         yield Footer()
@@ -162,6 +165,13 @@ class ConsoleApp(IntuiApp):
 
     def action_palette(self) -> None:
         self.open_command_palette(_command_registry())
+
+    # --- Inline diff ---------------------------------------------------------
+
+    def action_toggle_diff(self) -> None:
+        """Show/hide the diff inline, in the flow (not a separate view)."""
+        region = self.query_one("#inline-diff")
+        region.display = not region.display
 
     # --- Panel overlays ------------------------------------------------------
 
@@ -261,6 +271,9 @@ class ConsoleApp(IntuiApp):
         )
 
     async def handle_intent(self, intent: Intent) -> None:
+        if intent.name == "toggle_diff":
+            self.action_toggle_diff()
+            return
         if intent.name == "select_view":
             self._emit("view_selected", view=intent.payload["view"])
             return
