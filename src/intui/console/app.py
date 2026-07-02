@@ -138,7 +138,7 @@ class ConsoleApp(IntuiApp):
 
         yield Header()
         yield ActivityStrip(_activity_state, swoosh_glow=6, sweep_seconds=self._sweep_seconds)
-        yield RunTimeline(run_timeline_view())
+        yield RunTimeline(run_timeline_view(public_safe=self._public_safe))
         diff_region = DiffViewer(diff_view(public_safe=self._public_safe), id="inline-diff")
         diff_region.display = False
         yield diff_region

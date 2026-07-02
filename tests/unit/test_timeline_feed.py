@@ -87,6 +87,55 @@ def test_plain_messages_and_unmatched_failures_stay_rows(tmp_path: Path) -> None
     assert len(stray) == 1 and stray[0].kind == "failure"  # kept, styled as failure
 
 
+def test_rows_carry_elapsed_time_from_run_start(tmp_path: Path) -> None:
+    out = tmp_path / "run.jsonl"
+    rec = run_recorder(out, run_id="t")
+    rec.run_started(summary="demo")
+    rec.agent("first")
+    rec.user("second")
+    rec.close()
+
+    view = run_timeline_view()(_store_from(out).snapshot)
+    assert all(r.elapsed.startswith("+") for r in view.rows)  # "+0.0s" style
+    assert all(r.elapsed.endswith("s") for r in view.rows)
+    # roles survive as labels for the renderer's voice treatment
+    labels = [r.label for r in view.rows if r.kind == "message"]
+    assert labels == ["agent", "user"]
+
+
+def test_evidence_becomes_a_summary_card_in_the_flow(tmp_path: Path) -> None:
+    out = tmp_path / "run.jsonl"
+    rec = run_recorder(out, run_id="t")
+    rec.run_started(summary="demo")
+    rec.evidence(title="pytest summary", passed=2, failed=1, skipped=1, duration="0.5s")
+    rec.run_completed(status="passed")
+    rec.close()
+
+    view = run_timeline_view()(_store_from(out).snapshot)
+    cards = [r for r in view.rows if r.kind == "card"]
+    assert len(cards) == 1
+    assert cards[0].text == "pytest summary"
+    assert "passed 2" in cards[0].detail and "failed 1" in cards[0].detail
+    # chronological: the card sits between run start and run end
+    kinds = [r.kind for r in view.rows]
+    assert kinds.index("card") < kinds.index("milestone", kinds.index("card"))
+
+
+def test_card_values_are_redacted_unless_opted_out(tmp_path: Path) -> None:
+    out = tmp_path / "run.jsonl"
+    rec = run_recorder(out, run_id="t")
+    rec.evidence(title="summary", workdir="/home/alice/run-42", passed=3)
+    rec.close()
+
+    store = _store_from(out)
+    safe = run_timeline_view()(store.snapshot)
+    card = next(r for r in safe.rows if r.kind == "card")
+    assert "run-42" not in card.detail  # redacted by default (Principle VI)
+    unsafe = run_timeline_view(public_safe=False)(store.snapshot)
+    card = next(r for r in unsafe.rows if r.kind == "card")
+    assert "run-42" in card.detail
+
+
 def test_empty_stream_yields_empty_feed(tmp_path: Path) -> None:
     out = tmp_path / "run.jsonl"
     rec = run_recorder(out, run_id="t")

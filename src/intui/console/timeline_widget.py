@@ -84,29 +84,55 @@ class RunTimeline(BoundContainer):
         for i, row in enumerate(self._view.rows):
             if i:
                 text.append("\n")
-            if row.kind == "failure":
+            if row.kind in ("failure", "card"):
                 self._append_callout(text, row, theme, first=i == 0)
                 continue
             color = self._row_color(theme, row.status)
             text.append(f"{row.glyph} ", style=color or "")
-            text.append(row.text)
-            if row.label and row.kind == "task":
-                text.append(f"  [{row.label}]", style="dim")
+            if row.kind == "message":
+                self._append_message(text, row, theme)
+            else:
+                text.append(row.text)
+                if row.label and row.kind == "task":
+                    text.append(f"  [{row.label}]", style="dim")
+            self._append_elapsed(text, row)
         return text
 
+    def _append_message(self, text: Text, row: TimelineRow, theme: Any) -> None:
+        """Voice per row: the agent is the default voice; the user is bright
+        and tagged ‹you›; system lines are dimmed and tagged ‹system›."""
+        if row.label == "user":
+            accent = self._theme_color(theme, "accent")
+            text.append(row.text, style=f"bold {accent}" if accent else "bold")
+            text.append("  ‹you›", style="dim")
+        elif row.label == "system":
+            text.append(row.text, style="dim")
+            text.append("  ‹system›", style="dim")
+        else:
+            text.append(row.text)
+
+    def _append_elapsed(self, text: Text, row: TimelineRow) -> None:
+        if row.elapsed:
+            text.append(f"  {row.elapsed}", style="dim")
+
     def _append_callout(self, text: Text, row: TimelineRow, theme: Any, *, first: bool) -> None:
-        """A failure renders as a bordered callout: grabs the eye, holds the
-        detail (the assertion / message) right where the failure is."""
-        red = self._row_color(theme, "failed") or ""
+        """Failures and summary cards render as bordered blocks: a failure is
+        red and holds its detail (the assertion) right where it happened; a
+        card is accent-colored and holds the run's summary metrics."""
+        if row.kind == "card":
+            edge = self._theme_color(theme, "accent") or ""
+        else:
+            edge = self._row_color(theme, "failed") or ""
         if not first:
-            text.append("\n")  # breathing room above the callout
-        text.append("▌ ", style=red)
-        text.append(f"{row.glyph} {row.text}", style=red)
+            text.append("\n")  # breathing room above the block
+        text.append("▌ ", style=edge)
+        text.append(f"{row.glyph} {row.text}", style=edge)
         text.append(f"  [{row.label}]", style="dim")
+        self._append_elapsed(text, row)
         for line in row.detail.splitlines():
             text.append("\n")
-            text.append("▌ ", style=red)
-            text.append(f"  {line}", style="dim")
+            text.append("▌ ", style=edge)
+            text.append(f"  {line}", style="dim" if row.kind == "failure" else "")
         text.append("\n")  # and below, so it reads as a block
 
     def _row_color(self, theme: Any, status: str) -> str | None:
@@ -114,6 +140,11 @@ class RunTimeline(BoundContainer):
             return None
         key = {"failed": "failure", "completed": "success", "passed": "success"}.get(status)
         return str(theme.resolve_color(key)) if key else None
+
+    def _theme_color(self, theme: Any, token: str) -> str | None:
+        if theme is None:
+            return None
+        return str(theme.resolve_color(token))
 
     def log_text(self) -> str:
         return self._build_text().plain

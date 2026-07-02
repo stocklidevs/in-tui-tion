@@ -28,6 +28,12 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
   order** (work items and tasks are single rows updated in place); a
   ``FAILED <ref>: detail`` message attaches to its failure row, which renders
   as a bordered callout with the detail inside.
+- **Voice per row** — user messages are bright and tagged ``‹you›``, system
+  lines dimmed and tagged ``‹system›``, the agent is the default voice; every
+  row carries a ``+4.2s`` elapsed marker on the run's own clock.
+- **Summary card in the flow** — ``evidence_ready`` renders as an
+  accent-bordered card on the timeline (metrics joined ``label value · …``),
+  values redacted by default (``run_timeline_view(public_safe=…)``).
 
 ## [1.1.0] - 2026-06-14
 
