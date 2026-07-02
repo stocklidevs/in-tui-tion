@@ -46,9 +46,12 @@ intui watch --metrics -- python build.py       # watch a command's CPU/memory
 intui watch --adapter intentforge run.ndjson   # normalize an IntentForge run
 ```
 
-In the console: `t/l/f/d/e/m` switch views (tasks, lanes, files, diff, evidence,
-metrics) · `space ,/. home/end` **time-travel** (pause, step, rewind, resume) ·
-`ctrl+s` saves the run to a replayable file · `ctrl+p` the command palette.
+The run itself is the interface: a **single-column timeline** of the stream
+under the KITT activity strip, with a prompt pinned to the bottom. `d` (or
+`/diff`) unfolds the diff inline; `t/l/f/e/m` (or `/tasks /lanes /files
+/evidence /metrics`) open panels as overlays, Esc closes · `space ,/. home/end`
+**time-travel** (pause, step, rewind, resume) · `ctrl+s` saves the run to a
+replayable file · `ctrl+p` the command palette.
 
 ## Produce a stream — a few lines, no JSON by hand
 

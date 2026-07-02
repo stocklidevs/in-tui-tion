@@ -7,7 +7,6 @@ from pathlib import Path
 
 from intui.console import build_console
 from intui.events import MemorySource, NdjsonStreamSource, StreamState
-from intui.kit import ViewRouter
 from intui.kit.state import evidence_view
 
 RECORDING = (
@@ -30,6 +29,8 @@ async def _drain(app: object, pilot: object) -> None:
 
 
 async def test_renders_canonical_stream_into_slices() -> None:
+    from intui.console import RunTimeline
+
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
@@ -39,22 +40,24 @@ async def test_renders_canonical_stream_into_slices() -> None:
         assert len(app.store.snapshot.slice("conversation").entries) >= 5
         assert app.store.snapshot.slice("taskboard").tasks
         assert app.store.snapshot.health.state is StreamState.ENDED
+        # the timeline is the primary surface and reduced the run
+        timeline = app.query_one(RunTimeline)
+        assert timeline.log_text().strip()
+        assert "waiting for events" not in timeline.log_text()
 
 
-async def test_views_are_keyboard_navigable() -> None:
+async def test_panels_are_keyboard_navigable() -> None:
+    # Browsable panels open as overlays (Esc closes); full coverage lives in
+    # tests/integration/test_console_overlays.py.
     app = build_console(_source())
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        for key, view in [
-            ("l", "lanes"),
-            ("f", "files"),
-            ("d", "diff"),
-            ("e", "evidence"),
-            ("t", "tasks"),
-        ]:
+        for key in ("l", "f", "e", "t", "m"):
             await pilot.press(key)
             await pilot.pause(0.05)
-            assert app.query_one(ViewRouter).current_view() == view
+            assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay", key
+            await pilot.press("escape")
+            await pilot.pause(0.05)
         assert app.is_running
 
 
@@ -87,8 +90,8 @@ async def test_files_view_shows_workspace_tree() -> None:
         await _drain(app, pilot)
         await pilot.press("f")
         await pilot.pause(0.05)
-        assert app.query_one(ViewRouter).current_view() == "files"
-        paths = app.query_one(FileTree).paths()
+        assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay"
+        paths = app.screen_stack[-1].query_one(FileTree).paths()
         assert "src/app.py" in paths and "README.md" in paths
 
 
@@ -134,7 +137,10 @@ async def _select_file(app: object, pilot: object, path: str) -> None:
 
     await pilot.press("f")  # type: ignore[attr-defined]
     await pilot.pause(0.05)  # type: ignore[attr-defined]
-    tree = app.query_one(FileTree).query_one(Tree)  # type: ignore[attr-defined]
+    # query within the active overlay screen (App.query_one searches the
+    # default screen, not the pushed modal)
+    overlay = app.screen_stack[-1]  # type: ignore[attr-defined]
+    tree = overlay.query_one(FileTree).query_one(Tree)
     tree.focus()
     await pilot.pause()  # type: ignore[attr-defined]
 
@@ -231,8 +237,8 @@ async def test_metrics_view_reachable_and_shows_panel() -> None:
         await _drain(app, pilot)
         await pilot.press("m")
         await pilot.pause(0.05)
-        assert app.query_one(ViewRouter).current_view() == "metrics"
-        panel = app.query_one(MetricsPanel)
+        assert app.screen_stack[-1].__class__.__name__ == "PanelOverlay"
+        panel = app.screen_stack[-1].query_one(MetricsPanel)
         assert panel.status() == "passed"
         assert "build.py" in panel.summary_text()
 
@@ -333,7 +339,10 @@ async def test_scrub_steps_through_history() -> None:
     app = build_console(_tasks_stream(4))
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        chip = app.query_one(TaskCounterChip)
+        # scrub while the tasks overlay is open (the chip lives there now)
+        await pilot.press("t")
+        await pilot.pause(0.05)
+        chip = app.screen_stack[-1].query_one(TaskCounterChip)
         assert "/ 4 tasks" in chip.header_text()
 
         app.action_scrub_toggle()  # pause at 4
@@ -363,7 +372,9 @@ async def test_scrub_holds_while_live_grows() -> None:
     app = build_console(_tasks_stream(2))
     async with app.run_test(size=(120, 40)) as pilot:
         await _drain(app, pilot)
-        chip = app.query_one(TaskCounterChip)
+        await pilot.press("t")  # the chip lives in the tasks overlay now
+        await pilot.pause(0.05)
+        chip = app.screen_stack[-1].query_one(TaskCounterChip)
 
         app.action_scrub_back()  # pause at 1
         await pilot.pause(0.05)

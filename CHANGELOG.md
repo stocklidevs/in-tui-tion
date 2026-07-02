@@ -4,6 +4,27 @@ All notable changes to **in-TUI-tion** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-07-01
+
+### Changed
+
+- **Console UX redesign** — the run itself is now the interface. The side
+  conversation column and the one-view-at-a-time router are replaced by a
+  **single-column run timeline** (messages, task results, and failure callouts
+  in arrival order, every row glyph+label) with a **prompt pinned to the
+  bottom**. Slash commands (`/tasks /lanes /files /evidence /metrics /diff
+  /scrub /save`) or the same single keys drive everything: diffs unfold
+  **inline** (`d`), browsable panels open as **modal overlays** (Esc closes).
+  A one-shot red flash lands with a new failure (honoring reduced motion);
+  the KITT strip still tracks the run phase by color, glyph, and label.
+  Pure rendering-layer change: events, state, reducers, and selectors are
+  untouched, and recordings replay identically.
+
+### Added
+
+- `run_timeline_view` selector + `TimelineRow`/`TimelineFeedView` models
+  (engine-free) and the `RunTimeline` console widget.
+
 ## [1.1.0] - 2026-06-14
 
 ### Added

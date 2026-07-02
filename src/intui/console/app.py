@@ -1,12 +1,15 @@
 """ConsoleApp: the batteries-included, zero-config console (R-runner).
 
 Point it at any canonical event stream and get a console — no application
-reducers, no widgets to wire. A read-mostly viewer: a signature KITT activity
-strip, a persistent conversation, a routable central view
-(tasks / lanes / diff / evidence), and a command bar. Public-safe by default.
+reducers, no widgets to wire. The run itself is the interface: a single-column
+timeline of the stream (messages, task results, failure callouts) under the
+signature KITT activity strip, with a floor-pinned prompt for slash commands.
+Diffs unfold inline (``d`` / ``/diff``); the browsable panels (tasks / lanes /
+files / evidence / metrics) open as modal overlays (keys or ``/name``, Esc
+closes). Public-safe by default.
 
-The full interactive operator console (modes, prompt, scripted replies) stays
-the flagship *example*; this is the generic substrate.
+The full interactive operator console (modes, scripted replies) stays the
+flagship *example*; this is the generic substrate.
 """
 
 from __future__ import annotations
@@ -16,24 +19,23 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Footer, Header, Label, Static
+from textual.containers import VerticalScroll
+from textual.widget import Widget
+from textual.widgets import Footer, Header, Static
 
 from intui.actions import Intent
 from intui.app import IntuiApp
 from intui.events import Event, EventSource, Scope, write_recording
 from intui.kit import (
     ActivityStrip,
-    CommandBar,
-    ConversationLog,
     DiffViewer,
     EvidencePanel,
     FileTree,
     LanesPanel,
     MetricsPanel,
+    PromptInput,
     TaskCounterChip,
     TaskTree,
-    ViewRouter,
 )
 from intui.kit.state import (
     Command,
@@ -41,25 +43,23 @@ from intui.kit.state import (
     artifacts_slice,
     chip_view,
     conversation_slice,
-    conversation_view,
     diff_view,
     evidence_view,
     file_tree_view,
     lanes_view,
     metrics_slice,
     metrics_view,
+    prompt_message_event,
     run_status_slice,
-    select_view_intent,
+    run_timeline_view,
     taskboard_slice,
     tree_view,
-    view_router_view,
-    view_slice,
     workspace_slice,
 )
 from intui.state import Snapshot, Store, Timeline, compose_reducers
 from intui.viewmodels import selector
 
-VIEWS = ("tasks", "lanes", "files", "diff", "evidence", "metrics")
+PANELS = ("tasks", "lanes", "files", "evidence", "metrics")
 
 
 @selector
@@ -67,16 +67,21 @@ def _activity_state(snapshot: Snapshot) -> str:
     return str(snapshot.slice("run_status"))
 
 
+def _open_panel_intent(name: str) -> Intent:
+    return Intent("open_panel", {"name": name})
+
+
 def _command_registry() -> CommandRegistry:
+    # Feeds the command palette (ctrl+p); the same actions have key BINDINGS
+    # and /slash forms on the prompt.
     return CommandRegistry(
         [
-            Command("view_tasks", "Tasks", select_view_intent("tasks"), key="t"),
-            Command("view_lanes", "Lanes", select_view_intent("lanes"), key="l"),
-            Command("view_files", "Files", select_view_intent("files"), key="f"),
-            Command("view_diff", "Diff", select_view_intent("diff"), key="d"),
-            Command("view_evidence", "Evidence", select_view_intent("evidence"), key="e"),
-            Command("view_metrics", "Metrics", select_view_intent("metrics"), key="m"),
-            Command("palette", "More", Intent("open_palette"), key="p"),
+            Command("panel_tasks", "Tasks", _open_panel_intent("tasks"), key="t"),
+            Command("panel_lanes", "Lanes", _open_panel_intent("lanes"), key="l"),
+            Command("panel_files", "Files", _open_panel_intent("files"), key="f"),
+            Command("toggle_diff", "Diff", Intent("toggle_diff"), key="d"),
+            Command("panel_evidence", "Evidence", _open_panel_intent("evidence"), key="e"),
+            Command("panel_metrics", "Metrics", _open_panel_intent("metrics"), key="m"),
         ]
     )
 
@@ -87,6 +92,13 @@ class ConsoleApp(IntuiApp):
     TITLE = "in-TUI-tion · console"
     BINDINGS = [
         ("q", "quit", "Quit"),
+        ("t", "open_panel('tasks')", "Tasks"),
+        ("l", "open_panel('lanes')", "Lanes"),
+        ("f", "open_panel('files')", "Files"),
+        ("e", "open_panel('evidence')", "Evidence"),
+        ("m", "open_panel('metrics')", "Metrics"),
+        ("d", "toggle_diff", "Diff"),
+        ("slash", "focus_prompt", "Prompt"),
         ("ctrl+p", "palette", "Commands"),
         ("ctrl+s", "record", "Save run"),
         ("space", "scrub_toggle", "Pause/Live"),
@@ -96,14 +108,13 @@ class ConsoleApp(IntuiApp):
         Binding("end", "scrub_live", "To live", show=False),
     ]
     CSS = """
-    /* Header and Footer self-dock; everything else flows top-to-bottom. */
+    /* Header and Footer self-dock; the timeline takes the remaining space,
+       with the inline diff, prompt, and scrub bar flowing beneath it. */
     ActivityStrip { height: 1; padding: 0 1; background: $panel; }
-    #body { height: 1fr; }
-    #conversation-col { width: 38; border-right: solid $panel; }
-    ViewRouter { width: 1fr; padding: 0 1; }
-    .col-title { text-style: bold; color: $text-muted; }
+    RunTimeline { height: 1fr; }
+    #inline-diff { height: auto; max-height: 40%; border-top: solid $panel; padding: 0 1; }
+    PromptInput { height: 3; }
     EvidencePanel { height: auto; }
-    CommandBar { height: 1; background: $panel; }
     #scrub-bar { height: 1; padding: 0 1; color: $text-muted; }
     """
 
@@ -122,29 +133,16 @@ class ConsoleApp(IntuiApp):
         self._timeline = Timeline()  # starts live (follow the end)
 
     def compose(self) -> ComposeResult:
+        from intui.console.timeline_widget import RunTimeline
+
         yield Header()
         yield ActivityStrip(_activity_state, swoosh_glow=6, sweep_seconds=self._sweep_seconds)
-        with Horizontal(id="body"):
-            with VerticalScroll(id="conversation-col"):
-                yield Label("Conversation", classes="col-title")
-                yield ConversationLog(conversation_view())
-            yield ViewRouter(
-                view_router_view(),
-                views={
-                    "tasks": VerticalScroll(
-                        TaskCounterChip(chip_view()),
-                        Label("Tasks", classes="col-title"),
-                        TaskTree(tree_view()),
-                    ),
-                    "lanes": LanesPanel(lanes_view()),
-                    "files": FileTree(file_tree_view(public_safe=self._public_safe)),
-                    "diff": DiffViewer(diff_view(public_safe=self._public_safe)),
-                    "evidence": EvidencePanel(evidence_view(public_safe=self._public_safe)),
-                    "metrics": MetricsPanel(metrics_view(public_safe=self._public_safe)),
-                },
-            )
+        yield RunTimeline(run_timeline_view())
+        diff_region = DiffViewer(diff_view(public_safe=self._public_safe), id="inline-diff")
+        diff_region.display = False
+        yield diff_region
+        yield PromptInput(placeholder="type /tasks /files /diff /metrics … or a note")
         yield Static(id="scrub-bar")
-        yield CommandBar(_command_registry())
         yield Footer()
 
     def on_mount(self) -> None:
@@ -156,6 +154,41 @@ class ConsoleApp(IntuiApp):
 
     def action_palette(self) -> None:
         self.open_command_palette(_command_registry())
+
+    # --- Inline diff ---------------------------------------------------------
+
+    def action_toggle_diff(self) -> None:
+        """Show/hide the diff inline, in the flow (not a separate view)."""
+        region = self.query_one("#inline-diff")
+        region.display = not region.display
+
+    # --- Panel overlays ------------------------------------------------------
+
+    def action_open_panel(self, name: str) -> None:
+        """Open a browsable panel as a modal overlay over the timeline."""
+        from intui.console.overlays import PanelOverlay
+
+        panel = self._panel_for(name)
+        if panel is None:
+            return
+        self.push_screen(PanelOverlay(name, panel))
+
+    def _panel_for(self, name: str) -> Widget | None:
+        ps = self._public_safe
+        if name == "files":
+            return FileTree(file_tree_view(public_safe=ps))
+        if name == "metrics":
+            return MetricsPanel(metrics_view(public_safe=ps))
+        if name == "lanes":
+            return LanesPanel(lanes_view())
+        if name == "evidence":
+            return EvidencePanel(evidence_view(public_safe=ps))
+        if name == "tasks":
+            return VerticalScroll(
+                TaskCounterChip(chip_view()),
+                TaskTree(tree_view()),
+            )
+        return None
 
     # --- Time-travel scrubber -----------------------------------------------
 
@@ -227,16 +260,46 @@ class ConsoleApp(IntuiApp):
         )
 
     async def handle_intent(self, intent: Intent) -> None:
-        if intent.name == "select_view":
-            self._emit("view_selected", view=intent.payload["view"])
+        if intent.name == "toggle_diff":
+            self.action_toggle_diff()
+            return
+        if intent.name == "open_panel":
+            self.action_open_panel(str(intent.payload["name"]))
             return
         if intent.name == "open_palette":
             self.open_command_palette(_command_registry())
+            return
+        if intent.name == "prompt_submitted":
+            self._handle_prompt(str(intent.payload.get("text", "")))
             return
         if intent.name in ("copy_path", "open_file", "delete_file"):
             self._handle_file_action(intent)
             return
         self.notify(f"intent: {intent.name}", timeout=2.0)
+
+    def _handle_prompt(self, text: str) -> None:
+        """Route a floor-prompt submission.
+
+        ``/name`` runs the matching command (panels, diff, scrub, save);
+        anything else is appended to the timeline as a user note.
+        """
+        if text.startswith("/"):
+            word = text[1:].split()[0].lower() if text[1:].strip() else ""
+            if word in PANELS:
+                self.action_open_panel(word)
+            elif word == "diff":
+                self.action_toggle_diff()
+            elif word == "scrub":
+                self.action_scrub_toggle()
+            elif word == "save":
+                self.action_record()
+            else:
+                self.notify(f"unknown command: {text}", timeout=3.0)
+            return
+        self.store.ingest(prompt_message_event(text))
+
+    def action_focus_prompt(self) -> None:
+        self.query_one(PromptInput).focus_prompt()
 
     def _handle_file_action(self, intent: Intent) -> None:
         """Fulfill a file-action intent.
@@ -275,11 +338,11 @@ def build_console(
     """Build a :class:`ConsoleApp` over ``source`` with the canonical slices.
 
     No application reducers required — the bundled taskboard / artifacts /
-    conversation / view-router / run-status slices reduce the canonical stream.
+    conversation / workspace / metrics / run-status slices reduce the
+    canonical stream into the timeline and panels.
     """
     store = Store(
         compose_reducers(
-            views=view_slice(VIEWS, "tasks"),
             conversation=conversation_slice(),
             taskboard=taskboard_slice(),
             artifacts=artifacts_slice(),

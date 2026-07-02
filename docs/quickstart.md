@@ -69,8 +69,9 @@ from intui.console import watch
 watch("run.jsonl")                    # a path, or any EventSource
 ```
 
-You get a KITT activity strip, a conversation panel, and a routable central
-view (`t` tasks, `l` lanes, `d` diff, `e` evidence) — public-safe by default
+You get a KITT activity strip over a single-column run timeline with a
+bottom-pinned prompt; `d`/`/diff` unfolds the diff inline and `t/l/f/e/m`
+(or `/tasks` … from the prompt) open panels as overlays — public-safe by default
 (`--no-public-safe` to show full diffs/evidence). The runner unwraps wrapped
 records (`{"type":"run_trace_event","event":{…}}`) and ignores trailing
 non-event records, so real producer output works out of the box. See the

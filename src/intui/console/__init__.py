@@ -8,5 +8,6 @@ kit, so it is deliberately NOT re-exported from the engine-free ``intui`` root
 
 from intui.console.app import ConsoleApp, build_console
 from intui.console.runner import watch
+from intui.console.timeline_widget import RunTimeline
 
-__all__ = ["ConsoleApp", "build_console", "watch"]
+__all__ = ["ConsoleApp", "RunTimeline", "build_console", "watch"]
