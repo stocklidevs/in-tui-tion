@@ -84,12 +84,30 @@ class RunTimeline(BoundContainer):
         for i, row in enumerate(self._view.rows):
             if i:
                 text.append("\n")
+            if row.kind == "failure":
+                self._append_callout(text, row, theme, first=i == 0)
+                continue
             color = self._row_color(theme, row.status)
             text.append(f"{row.glyph} ", style=color or "")
             text.append(row.text)
-            if row.label and row.kind in ("task", "failure"):
+            if row.label and row.kind == "task":
                 text.append(f"  [{row.label}]", style="dim")
         return text
+
+    def _append_callout(self, text: Text, row: TimelineRow, theme: Any, *, first: bool) -> None:
+        """A failure renders as a bordered callout: grabs the eye, holds the
+        detail (the assertion / message) right where the failure is."""
+        red = self._row_color(theme, "failed") or ""
+        if not first:
+            text.append("\n")  # breathing room above the callout
+        text.append("▌ ", style=red)
+        text.append(f"{row.glyph} {row.text}", style=red)
+        text.append(f"  [{row.label}]", style="dim")
+        for line in row.detail.splitlines():
+            text.append("\n")
+            text.append("▌ ", style=red)
+            text.append(f"  {line}", style="dim")
+        text.append("\n")  # and below, so it reads as a block
 
     def _row_color(self, theme: Any, status: str) -> str | None:
         if theme is None:

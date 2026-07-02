@@ -91,9 +91,12 @@ from intui.kit.state.selectors import (
 )
 from intui.kit.state.timeline_feed import (
     STATUS_GLYPH,
+    TIMELINE_EVENT_TYPES,
     TimelineFeedView,
     TimelineRow,
+    TimelineState,
     run_timeline_view,
+    timeline_slice,
 )
 from intui.kit.state.views import (
     VIEW_EVENT_TYPES,
@@ -131,6 +134,7 @@ KNOWN_EVENT_TYPES = frozenset(
     | RUN_STATUS_EVENT_TYPES
     | WORKSPACE_EVENT_TYPES
     | METRICS_EVENT_TYPES
+    | TIMELINE_EVENT_TYPES
 )
 
 __all__ = [
@@ -189,10 +193,12 @@ __all__ = [
     "MetricsState",
     "MetricsView",
     "TaskBoardState",
+    "TIMELINE_EVENT_TYPES",
     "TaskRow",
     "TaskView",
     "TimelineFeedView",
     "TimelineRow",
+    "TimelineState",
     "TreeView",
     "WorkItemView",
     "activity_style",
@@ -223,6 +229,7 @@ __all__ = [
     "run_status_reducer",
     "run_status_slice",
     "run_timeline_view",
+    "timeline_slice",
     "scan_workspace",
     "select_view_intent",
     "status_presentation",
